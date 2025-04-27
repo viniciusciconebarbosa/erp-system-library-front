@@ -38,19 +38,20 @@ const livroSchema = z.object({
   classificacaoEtaria: z.enum(['LIVRE', 'DOZE_ANOS', 'QUATORZE_ANOS', 'DEZESSEIS_ANOS', 'DEZOITO_ANOS']),
   estadoConservacao: z.enum(['OTIMO', 'BOM', 'REGULAR', 'RUIM']),
   sinopse: z.string().min(10, 'A sinopse deve ter pelo menos 10 caracteres'),
-  capaFoto: z
-    .instanceof(FileList)
-    .refine((files) => files.length === 0 || files.length === 1, 'Selecione apenas uma imagem')
-    .transform(files => files.length > 0 ? files[0] : undefined)
-    .refine(
-      (file) => !file || file.size <= MAX_FILE_SIZE,
-      'O tamanho máximo do arquivo é 5MB'
-    )
-    .refine(
-      (file) => !file || ACCEPTED_IMAGE_TYPES.includes(file.type),
-      'Apenas os formatos JPG, PNG e WebP são suportados'
-    )
-    .optional(),
+  capaFoto: typeof window === 'undefined' 
+    ? z.any() 
+    : z.instanceof(FileList)
+      .refine((files) => files.length === 0 || files.length === 1, 'Selecione apenas uma imagem')
+      .transform(files => files.length > 0 ? files[0] : undefined)
+      .refine(
+        (file) => !file || file.size <= MAX_FILE_SIZE,
+        'A imagem deve ter no máximo 5MB'
+      )
+      .refine(
+        (file) => !file || ACCEPTED_IMAGE_TYPES.includes(file.type),
+        'Formato de imagem não suportado'
+      )
+      .optional(),
 });
 
 type LivroFormValues = z.infer<typeof livroSchema>;

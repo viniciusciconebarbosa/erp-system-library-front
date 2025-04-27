@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+export const runtime = 'edge';
+
+import { useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
-import { LivroForm } from '@/components/livros/livro-form';
 import { useToast } from '@/hooks/use-toast';
 import { livrosApi } from '@/lib/api';
 import { useRouter } from 'next/navigation';
@@ -11,11 +13,23 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 
+// Importação dinâmica do formulário
+const LivroForm = dynamic(() => import('@/components/livros/livro-form').then(mod => mod.LivroForm), {
+  ssr: false
+});
+
 export default function NovoLivroPage() {
   const { toast } = useToast();
   const router = useRouter();
   const { isAdmin } = useAuth();
-  
+
+  useEffect(() => {
+    // Redirect non-admin users
+    if (!isAdmin) {
+      router.push('/livros');
+    }
+  }, [isAdmin, router]);
+
   const handleSubmit = async (formData: FormData) => {
     try {
       await livrosApi.create(formData);
@@ -35,9 +49,7 @@ export default function NovoLivroPage() {
     }
   };
 
-  // Redirect non-admin users
   if (!isAdmin) {
-    router.push('/livros');
     return null;
   }
 
@@ -61,3 +73,6 @@ export default function NovoLivroPage() {
     </DashboardLayout>
   );
 }
+
+
+
