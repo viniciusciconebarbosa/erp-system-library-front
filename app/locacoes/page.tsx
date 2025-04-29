@@ -10,6 +10,7 @@ import { ptBR } from 'date-fns/locale';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
+import { getImageUrl } from '@/lib/utils';
 import { 
   ColumnDef,
   ColumnFiltersState,
@@ -42,13 +43,24 @@ export default function LocacoesPage() {
   const [dialogAction, setDialogAction] = useState<{ type: 'devolver' | 'cancelar', id: string } | null>(null);
   
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   const fetchLocacoes = async () => {
     try {
       setLoading(true);
-      const response = await locacoesApi.getAll();
+      let response;
+      
+      // Se não for admin, busca apenas as locações do usuário
+      if (!isAdmin && user) {
+        response = await locacoesApi.getByUsuarioId(user.id);
+      } else {
+        response = await locacoesApi.getAll();
+      }
+      
       setLocacoes(Array.isArray(response) ? response : []);
+      
+      // Log para debug
+      console.log('Locações carregadas:', response);
     } catch (error) {
       console.error('Error fetching locacoes:', error);
       toast({
@@ -64,17 +76,17 @@ export default function LocacoesPage() {
 
   useEffect(() => {
     fetchLocacoes();
-  }, []);
+  }, [user, isAdmin]); // Adiciona user e isAdmin como dependências
 
   const handleDevolver = async () => {
     if (!dialogAction) return;
     
     try {
-      await locacoesApi.devolver(dialogAction.id);
+      const response = await locacoesApi.devolver(dialogAction.id);
       
-      // Update the status in the UI
+      // Update the status in the UI using the response from the API
       setLocacoes(locacoes.map(locacao => 
-        locacao.id === dialogAction.id ? { ...locacao, status: 'DEVOLVIDA' } : locacao
+        locacao.id === dialogAction.id ? { ...locacao, status: response.status } : locacao
       ));
       
       toast({
@@ -128,19 +140,31 @@ export default function LocacoesPage() {
 
   const columns: ColumnDef<Loan>[] = [
     {
-      accessorKey: 'livro.titulo',
+      accessorKey: 'livro',
       header: 'Livro',
       cell: ({ row }) => (
-        <div>
-          <div className="font-medium">{row.original.livro.titulo}</div>
-          <div className="text-sm text-muted-foreground">{row.original.livro.autor}</div>
+        <div className="flex items-center gap-3">
+          <img
+            src={getImageUrl(row.original.livro.capaFoto)}
+            alt={row.original.livro.titulo}
+            className="h-[60px] w-[40px] object-cover rounded-sm"
+          />
+          <div>
+            <div className="font-medium">{row.original.livro.titulo}</div>
+            <div className="text-sm text-muted-foreground">{row.original.livro.autor}</div>
+          </div>
         </div>
       ),
     },
     {
       accessorKey: 'usuario.nome',
       header: 'Usuário',
-      cell: ({ row }) => <span>{row.original.usuario.nome}</span>,
+      cell: ({ row }) => (
+        <div className="flex flex-col">
+          <span className="font-medium">{row.original.usuario.nome}</span>
+          <span className="text-sm text-muted-foreground">{row.original.usuario.email}</span>
+        </div>
+      ),
     },
     {
       accessorKey: 'dataLocacao',
@@ -161,7 +185,9 @@ export default function LocacoesPage() {
         const status = row.original.status;
         const variant = 
           status === 'ATIVA' ? 'default' : 
-          status === 'DEVOLVIDA' ? 'outline' : 'destructive';
+          status === 'FINALIZADA' ? 'outline' :
+          status === 'ATRASADA' ? 'destructive' :
+          'secondary';
         
         return (
           <Badge variant={variant}>
@@ -204,19 +230,10 @@ export default function LocacoesPage() {
               className="h-8 gap-1"
               onClick={() => setDialogAction({ type: 'devolver', id: locacao.id })}
             >
-              <CheckCircle2 className="h-4 w-4 text-green-500" />
+              <CheckCircle2 className="h-4 w-4 text-black-500" />
               <span className="sr-only sm:not-sr-only">Devolver</span>
             </Button>
-            
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="h-8 gap-1"
-              onClick={() => setDialogAction({ type: 'cancelar', id: locacao.id })}
-            >
-              <XCircle className="h-4 w-4 text-red-500" />
-              <span className="sr-only sm:not-sr-only">Cancelar</span>
-            </Button>
+          
           </div>
         );
       },
@@ -230,9 +247,34 @@ export default function LocacoesPage() {
           <div className="flex-1 space-y-1">
             <h2 className="text-xl font-semibold tracking-tight">Locações de Livros</h2>
             <p className="text-sm text-muted-foreground">
-              Gerencie locações, devoluções e cancelamentos de livros
+              {isAdmin 
+                ? "Gerencie locações, devoluções e cancelamentos de livros"
+                : "Visualize e gerencie suas locações de livros"}
             </p>
           </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={fetchLocacoes}
+            className="gap-2"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="animate-spin"
+              style={{ animationPlayState: loading ? 'running' : 'paused' }}
+            >
+              <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+            </svg>
+            Atualizar
+          </Button>
         </div>
         
         {loading ? (
@@ -248,14 +290,19 @@ export default function LocacoesPage() {
             <Calendar className="mb-4 h-12 w-12 text-muted-foreground" />
             <h3 className="mb-2 text-lg font-semibold">Nenhuma locação encontrada</h3>
             <p className="text-muted-foreground">
-              Não há registros de locações no sistema.
+              {isAdmin 
+                ? "Não há registros de locações no sistema."
+                : "Você ainda não possui nenhuma locação de livro."}
             </p>
           </div>
         ) : (
-          <DataTable
-            columns={columns}
-            data={locacoes}
-          />
+          <div className="rounded-md border">
+            <DataTable
+              columns={columns}
+              data={locacoes}
+              className="[&_.custom-cell]:p-0"
+            />
+          </div>
         )}
       </div>
 

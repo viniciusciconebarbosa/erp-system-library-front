@@ -52,9 +52,29 @@ export default function UsuariosPage() {
     try {
       setLoading(true);
       const response = await usuariosApi.getAll(page, pageSize);
-      setUsuarios(response.content);
-      setTotalElements(response.pageable.totalElements);
-      setTotalPages(Math.ceil(response.pageable.totalElements / pageSize));
+      console.log('Resposta da API de usuários:', response); // Debug
+
+      // Verifica se a resposta é um array (API sem paginação)
+      if (Array.isArray(response)) {
+        setUsuarios(response);
+        setTotalElements(response.length);
+        setTotalPages(1);
+      } 
+      // Verifica se a resposta tem o formato paginado esperado
+      else if (response.content && response.pageable) {
+        setUsuarios(response.content);
+        setTotalElements(response.pageable.totalElements);
+        setTotalPages(Math.ceil(response.pageable.totalElements / pageSize));
+      }
+      // Se a resposta tiver outro formato
+      else {
+        console.error('Formato de resposta inesperado:', response);
+        toast({
+          variant: "destructive",
+          title: "Erro ao carregar usuários",
+          description: "Formato de dados inválido.",
+        });
+      }
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({

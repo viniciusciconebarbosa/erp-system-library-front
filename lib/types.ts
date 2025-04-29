@@ -24,14 +24,17 @@ export type Loan = {
     id: string;
     titulo: string;
     autor: string;
+    capaFoto: string;
+    disponivelLocacao: boolean;
   };
   usuario: {
     id: string;
     nome: string;
+    email: string;
   };
   dataLocacao: string;
   dataDevolucao: string | null;
-  status: 'ATIVA' | 'DEVOLVIDA' | 'CANCELADA';
+  status: 'ATIVA' | 'FINALIZADA' | 'ATRASADA' | 'CANCELADA';
 };
 
 export type PageResponse<T> = {
@@ -89,6 +92,21 @@ export const estadoConservacaoLabels = {
 
 export const statusLocacaoLabels = {
   ATIVA: 'Ativa',
-  DEVOLVIDA: 'Devolvida',
+  FINALIZADA: 'Finalizada',
+  ATRASADA: 'Atrasada',
   CANCELADA: 'Cancelada'
 };
+
+export type Genero = 'FICCAO' | 'NAO_FICCAO' | 'ROMANCE' | 'TECNICO' | 'INFANTIL';
+export type ClassificacaoEtaria = 'LIVRE' | 'DEZ_ANOS' | 'DOZE_ANOS' | 'QUATORZE_ANOS' | 'DEZESSEIS_ANOS' | 'DEZOITO_ANOS';
+export type EstadoConservacao = 'NOVO' | 'OTIMO' | 'BOM' | 'REGULAR' | 'RUIM';
+
+export interface LivroDTO {
+  titulo: string;
+  autor: string;
+  genero: Genero;
+  classificacaoEtaria: ClassificacaoEtaria;
+  estadoConservacao: EstadoConservacao;
+  sinopse?: string;
+  doadorId?: string;
+}

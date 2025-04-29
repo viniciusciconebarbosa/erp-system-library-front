@@ -4,76 +4,173 @@ import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { livrosApi, locacoesApi, usuariosApi } from '@/lib/api';
-import { Book, Loan, User } from '@/lib/types';
+import { Book, User } from '@/lib/types';
 import { useAuth } from '@/lib/auth-context';
 import { BookOpenText, Clock, Users, BookCheck, BarChart } from 'lucide-react';
-import { BarChart as ReBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { Bar } from 'react-chartjs-2';
+import { Pie } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip as ChartTooltip,
+  Legend,
+  ArcElement
+} from 'chart.js';
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+// Registrar os componentes necessários do Chart.js
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  ChartTooltip,
+  Legend,
+  ArcElement
+);
+
+// Cores para os gráficos
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
 export default function DashboardPage() {
   const { isAdmin } = useAuth();
   const [loading, setLoading] = useState(true);
   const [totalLivros, setTotalLivros] = useState(0);
   const [livrosDisponiveis, setLivrosDisponiveis] = useState(0);
-  const [totalLocacoes, setTotalLocacoes] = useState(0);
   const [locacoesAtivas, setLocacoesAtivas] = useState(0);
   const [totalUsuarios, setTotalUsuarios] = useState(0);
   const [generoData, setGeneroData] = useState<Array<{ name: string; value: number }>>([]);
   const [estadoData, setEstadoData] = useState<Array<{ name: string; value: number }>>([]);
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        
-        // Fetch books data
-        const livrosData = await livrosApi.getAll();
-        setTotalLivros(livrosData.length);
-        
-        const disponiveis = livrosData.filter((livro: Book) => livro.disponivelLocacao).length;
-        setLivrosDisponiveis(disponiveis);
-        
-        // Process book data for charts
-        const generos: Record<string, number> = {};
-        const estados: Record<string, number> = {};
-        
-        livrosData.forEach((livro: Book) => {
-          generos[livro.genero] = (generos[livro.genero] || 0) + 1;
-          estados[livro.estadoConservacao] = (estados[livro.estadoConservacao] || 0) + 1;
-        });
-        
-        setGeneroData(Object.entries(generos).map(([name, value]) => ({ name, value })));
-        setEstadoData(Object.entries(estados).map(([name, value]) => ({ name, value })));
-        
-        // Fetch loans data
-        const locacoesData = await locacoesApi.getAll();
-        setTotalLocacoes(locacoesData.length);
-        
-        const ativas = locacoesData.filter((locacao: Loan) => locacao.status === 'ATIVA').length;
-        setLocacoesAtivas(ativas);
-        
-        // Fetch users data if admin
-        if (isAdmin) {
-          const usuariosData = await usuariosApi.getAll();
-          setTotalUsuarios(usuariosData.length);
-        }
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-      } finally {
-        setLoading(false);
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      
+      const livrosData = await livrosApi.getAll();
+      setTotalLivros(livrosData.length);
+      
+      const disponiveis = livrosData.filter((livro: Book) => livro.disponivelLocacao).length;
+      setLivrosDisponiveis(disponiveis);
+      
+      const generos: Record<string, number> = {};
+      const estados: Record<string, number> = {};
+      
+      livrosData.forEach((livro: Book) => {
+        generos[livro.genero] = (generos[livro.genero] || 0) + 1;
+        estados[livro.estadoConservacao] = (estados[livro.estadoConservacao] || 0) + 1;
+      });
+      
+      setGeneroData(Object.entries(generos).map(([name, value]) => ({ name, value })));
+      setEstadoData(Object.entries(estados).map(([name, value]) => ({ name, value })));
+      
+      const quantidadeAtivas = await locacoesApi.getQuantidadeAtivas();
+      const numeroAtivas = typeof quantidadeAtivas === 'number' ? quantidadeAtivas : 0;
+      setLocacoesAtivas(numeroAtivas);
+      
+      if (isAdmin) {
+        const usuariosData = await usuariosApi.getAll();
+        setTotalUsuarios(usuariosData.length);
       }
-    };
-    
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchDashboardData();
+    const interval = setInterval(fetchDashboardData, 30000);
+    return () => clearInterval(interval);
   }, [isAdmin]);
+
+  // Configuração do gráfico de barras
+  const barChartData = {
+    labels: generoData.map(item => item.name),
+    datasets: [
+      {
+        label: 'Quantidade',
+        data: generoData.map(item => item.value),
+        backgroundColor: 'hsl(var(--primary))',
+        borderRadius: 4,
+      },
+    ],
+  };
+
+  const barChartOptions = {
+    indexAxis: 'y' as const,
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+    },
+    scales: {
+      x: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+        },
+      },
+    },
+  };
+
+  // Configuração do gráfico de pizza
+  const pieChartData = {
+    labels: estadoData.map(item => item.name),
+    datasets: [
+      {
+        data: estadoData.map(item => item.value),
+        backgroundColor: COLORS,
+      },
+    ],
+  };
+
+  const pieChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'right' as const,
+      },
+    },
+  };
 
   return (
     <DashboardLayout title="Dashboard">
       <div className="space-y-8">
+        <div className="flex justify-end">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={fetchDashboardData}
+            className="gap-2"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="animate-spin"
+              style={{ animationPlayState: loading ? 'running' : 'paused' }}
+            >
+              <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+            </svg>
+            Atualizar
+          </Button>
+        </div>
+
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <StatsCard
             title="Total de Livros"
@@ -124,15 +221,7 @@ export default function DashboardPage() {
               {loading ? (
                 <Skeleton className="h-full w-full" />
               ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <ReBarChart data={generoData} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis dataKey="name" type="category" />
-                    <Tooltip />
-                    <Bar dataKey="value" fill="hsl(var(--chart-1))" radius={[0, 4, 4, 0]} />
-                  </ReBarChart>
-                </ResponsiveContainer>
+                <Bar data={barChartData} options={barChartOptions} />
               )}
             </CardContent>
           </Card>
@@ -149,25 +238,7 @@ export default function DashboardPage() {
               {loading ? (
                 <Skeleton className="h-full w-full" />
               ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={estadoData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={true}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {estadoData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+                <Pie data={pieChartData} options={pieChartOptions} />
               )}
             </CardContent>
           </Card>

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'https://minha1api.duckdns.org';
+export const API_URL = 'http://localhost:8080/';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -37,14 +37,21 @@ api.interceptors.response.use(
 
 export const authApi = {
   login: async (email: string, senha: string) => {
-    const response = await api.post('/api/auth/login', { email, senha });
-    return response.data;
+    try {
+      const response = await api.post('/api/auth/login', { email, senha });
+      console.log('Resposta do login:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Erro no login:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+      throw error;
+    }
   },
   register: async (userData: { nome: string; email: string; senha: string; idade: number }) => {
     try {
-      console.log('Enviando requisição para:', `${API_URL}/api/auth/registro`);
-      console.log('Dados enviados:', userData);
-      
       const response = await api.post('/api/auth/registro', userData);
       return response.data;
     } catch (error: any) {
@@ -68,13 +75,32 @@ export const livrosApi = {
     const response = await api.get(`/api/livros/${id}`);
     return response.data;
   },
-  create: async (livroData: FormData) => {
-    const response = await api.post('/api/livros', livroData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
+  create: async (livro: LivroDTO, capaFile?: File) => {
+    try {
+      const formData = new FormData();
+      
+      // Adiciona o JSON do livro
+      formData.append(
+        'livro', 
+        new Blob([JSON.stringify(livro)], { type: 'application/json' })
+      );
+      
+      // Adiciona o arquivo da capa se existir
+      if (capaFile) {
+        formData.append('capa', capaFile);
       }
-    });
-    return response.data;
+      
+      const response = await api.post('/api/livros', formData);
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 403) {
+        throw new Error('Você não tem permissão para cadastrar livros');
+      } else if (error.response?.status === 400) {
+        throw new Error('Dados inválidos. Verifique os campos obrigatórios');
+      }
+      console.error('Erro ao cadastrar livro:', error);
+      throw new Error('Erro ao cadastrar livro');
+    }
   },
   update: async (id: string, livroData: FormData) => {
     const response = await api.put(`/api/livros/${id}`, livroData, {
@@ -95,6 +121,33 @@ export const locacoesApi = {
     const response = await api.get('/api/locacoes');
     return response.data;
   },
+  getAtivas: async () => {
+    const response = await api.get('/api/locacoes/ativas');
+    return response.data;
+  },
+  getQuantidadeAtivas: async () => {
+    try {
+      const response = await api.get('/api/locacoes/ativas/quantidade');
+      return response.data;
+    } catch (error: any) {
+      console.error('Erro ao buscar quantidade de locações ativas:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        headers: error.response?.headers,
+        config: error.config
+      });
+      // Retorna 0 em caso de erro para não quebrar a interface
+      return 0;
+    }
+  },
+  getByUsuarioId: async (usuarioId: string) => {
+    const response = await api.get(`/api/locacoes/usuario/${usuarioId}`);
+    return response.data;
+  },
+  getById: async (id: string) => {
+    const response = await api.get(`/api/locacoes/${id}`);
+    return response.data;
+  },
   create: async (livroId: string, usuarioId: string) => {
     const response = await api.post('/api/locacoes', { livroId, usuarioId });
     return response.data;
@@ -111,10 +164,21 @@ export const locacoesApi = {
 
 export const usuariosApi = {
   getAll: async (page = 0, size = 10) => {
-    const response = await api.get('/api/usuarios', {
-      params: { page, size }
-    });
-    return response.data;
+    try {
+      console.log('Fazendo requisição para /api/usuarios com params:', { page, size });
+      const response = await api.get('/api/usuarios', {
+        params: { page, size }
+      });
+      console.log('Resposta da API de usuários:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Erro ao buscar usuários:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+      throw error;
+    }
   },
   getById: async (id: string) => {
     const response = await api.get(`/api/usuarios/${id}`);
