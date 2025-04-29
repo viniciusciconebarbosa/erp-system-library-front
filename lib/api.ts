@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { LivroDTO } from './types';
 
 export const API_URL = 'http://localhost:8080/';
 

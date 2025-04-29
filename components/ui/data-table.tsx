@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -35,6 +36,7 @@ interface DataTableProps<TData, TValue> {
     onPageChange: (page: number) => void;
     onPageSizeChange: (size: number) => void;
   };
+  className?: string;
 }
 
 export function DataTable<TData, TValue>({
@@ -43,6 +45,7 @@ export function DataTable<TData, TValue>({
   searchColumn,
   onSearch,
   pagination,
+  className,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [searchValue, setSearchValue] = useState('');
@@ -76,7 +79,7 @@ export function DataTable<TData, TValue>({
   };
 
   return (
-    <div className="space-y-4">
+    <div className={cn("space-y-4", className)}>
       {searchColumn && onSearch && (
         <div className="flex items-center gap-2 max-w-sm">
           <Input
