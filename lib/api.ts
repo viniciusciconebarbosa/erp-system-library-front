@@ -2,6 +2,7 @@ import axios from 'axios';
 import { LivroDTO } from './types';
 
 export const API_URL = 'https://minha1api.duckdns.org/';
+// export const API_URL = 'http://localhost:8080/';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -70,6 +71,14 @@ export const authApi = {
 export const livrosApi = {
   getAll: async () => {
     const response = await api.get('/api/livros');
+    return response.data;
+  },
+  getEstatisticasGeneros: async () => {
+    const response = await api.get('/api/livros/estatisticas/generos');
+    return response.data;
+  },
+  getEstatisticasConservacao: async () => {
+    const response = await api.get('/api/livros/estatisticas/conservacao');
     return response.data;
   },
   getById: async (id: string) => {
@@ -163,6 +172,13 @@ export const locacoesApi = {
   }
 };
 
+interface UpdateUserDTO {
+  nome?: string;
+  email?: string;
+  idade?: number;
+  senha?: string;
+}
+
 export const usuariosApi = {
   getAll: async (page = 0, size = 10) => {
     try {
@@ -185,9 +201,24 @@ export const usuariosApi = {
     const response = await api.get(`/api/usuarios/${id}`);
     return response.data;
   },
-  update: async (id: string, userData: any) => {
-    const response = await api.put(`/api/usuarios/${id}`, userData);
-    return response.data;
+  update: async (id: string, partialUserData: UpdateUserDTO) => {
+    try {
+      // Primeiro, busca os dados atuais do usuário
+      const currentUser = await usuariosApi.getById(id);
+      
+      // Combina os dados atuais com as alterações, removendo o campo senha se não fornecido
+      const updatedData = {
+        nome: partialUserData.nome ?? currentUser.nome,
+        email: partialUserData.email ?? currentUser.email,
+        idade: partialUserData.idade ?? currentUser.idade,
+        ...(partialUserData.senha ? { senha: partialUserData.senha } : {})
+      };
+
+      return api.put(`/api/usuarios/${id}`, updatedData).then(response => response.data);
+    } catch (error) {
+      console.error('Erro ao atualizar usuário:', error);
+      throw error;
+    }
   },
   delete: async (id: string) => {
     const response = await api.delete(`/api/usuarios/${id}`);

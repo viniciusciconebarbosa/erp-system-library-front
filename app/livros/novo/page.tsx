@@ -110,7 +110,7 @@ export default function NovoLivroPage() {
     const file = event.target.files?.[0];
     if (file) {
       setSelectedFile(file);
-    }
+  }
   };
 
   return (
@@ -122,7 +122,7 @@ export default function NovoLivroPage() {
             Preencha os dados do livro que será adicionado ao acervo
           </p>
         </div>
-
+        
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
@@ -268,7 +268,7 @@ export default function NovoLivroPage() {
               <Button type="submit" disabled={loading}>
                 {loading ? 'Cadastrando...' : 'Cadastrar Livro'}
               </Button>
-            </div>
+        </div>
           </form>
         </Form>
       </div>

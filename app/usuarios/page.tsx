@@ -62,9 +62,9 @@ export default function UsuariosPage() {
       } 
       // Verifica se a resposta tem o formato paginado esperado
       else if (response.content && response.pageable) {
-        setUsuarios(response.content);
-        setTotalElements(response.pageable.totalElements);
-        setTotalPages(Math.ceil(response.pageable.totalElements / pageSize));
+      setUsuarios(response.content);
+      setTotalElements(response.pageable.totalElements);
+      setTotalPages(Math.ceil(response.pageable.totalElements / pageSize));
       }
       // Se a resposta tiver outro formato
       else {

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { livrosApi, locacoesApi, usuariosApi } from '@/lib/api';
-import { Book, User } from '@/lib/types';
+import { Book, GeneroEstatistica, generoLabels, estadoConservacaoLabels } from '@/lib/types';
 import { useAuth } from '@/lib/auth-context';
 import { BookOpenText, Clock, Users, BookCheck, BarChart } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -23,7 +23,6 @@ import {
   ArcElement
 } from 'chart.js';
 
-// Registrar os componentes necessários do Chart.js
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -34,8 +33,7 @@ ChartJS.register(
   ArcElement
 );
 
-// Cores para os gráficos
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+const COLORS = ['#493082', '#2563eb', '#FF8042', '#8884d8', '#82ca9d'];
 
 export default function DashboardPage() {
   const { isAdmin } = useAuth();
@@ -44,29 +42,25 @@ export default function DashboardPage() {
   const [livrosDisponiveis, setLivrosDisponiveis] = useState(0);
   const [locacoesAtivas, setLocacoesAtivas] = useState(0);
   const [totalUsuarios, setTotalUsuarios] = useState(0);
-  const [generoData, setGeneroData] = useState<Array<{ name: string; value: number }>>([]);
-  const [estadoData, setEstadoData] = useState<Array<{ name: string; value: number }>>([]);
+  const [generoData, setGeneroData] = useState<GeneroEstatistica[]>([]);
+  const [conservacaoData, setConservacaoData] = useState<Array<{ nome: string; quantidade: number }>>([]);
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
       
       const livrosData = await livrosApi.getAll();
+      console.log('Dados dos livros:', livrosData);
       setTotalLivros(livrosData.length);
       
       const disponiveis = livrosData.filter((livro: Book) => livro.disponivelLocacao).length;
       setLivrosDisponiveis(disponiveis);
       
-      const generos: Record<string, number> = {};
-      const estados: Record<string, number> = {};
+      const generosData = await livrosApi.getEstatisticasGeneros();
+      setGeneroData(generosData);
       
-      livrosData.forEach((livro: Book) => {
-        generos[livro.genero] = (generos[livro.genero] || 0) + 1;
-        estados[livro.estadoConservacao] = (estados[livro.estadoConservacao] || 0) + 1;
-      });
-      
-      setGeneroData(Object.entries(generos).map(([name, value]) => ({ name, value })));
-      setEstadoData(Object.entries(estados).map(([name, value]) => ({ name, value })));
+      const conservacaoStats = await livrosApi.getEstatisticasConservacao();
+      setConservacaoData(conservacaoStats);
       
       const quantidadeAtivas = await locacoesApi.getQuantidadeAtivas();
       const numeroAtivas = typeof quantidadeAtivas === 'number' ? quantidadeAtivas : 0;
@@ -82,25 +76,31 @@ export default function DashboardPage() {
       setLoading(false);
     }
   };
-
+  
   useEffect(() => {
     fetchDashboardData();
     const interval = setInterval(fetchDashboardData, 30000);
     return () => clearInterval(interval);
   }, [isAdmin]);
 
-  // Configuração do gráfico de barras
   const barChartData = {
-    labels: generoData.map(item => item.name),
+    labels: conservacaoData.map(item => estadoConservacaoLabels[item.nome as keyof typeof estadoConservacaoLabels] || item.nome),
     datasets: [
       {
         label: 'Quantidade',
-        data: generoData.map(item => item.value),
-        backgroundColor: 'hsl(var(--primary))',
+        data: conservacaoData.map(item => item.quantidade),
+        backgroundColor: [
+          '#493082', // roxo para Ótimo (era verde)
+          '#2563eb', // azul para Bom
+          '#f97316', // laranja para Regular
+          '#ef4444', // vermelho para Ruim
+        ],
         borderRadius: 4,
       },
     ],
   };
+
+  console.log('Dados do gráfico de barras:', barChartData);
 
   const barChartOptions = {
     indexAxis: 'y' as const,
@@ -110,6 +110,16 @@ export default function DashboardPage() {
       legend: {
         display: false,
       },
+      tooltip: {
+        callbacks: {
+          label: function(context: any) {
+            const value = context.raw || 0;
+            const total = conservacaoData.reduce((acc, curr) => acc + curr.quantidade, 0);
+            const percentage = ((value / total) * 100).toFixed(1);
+            return `${value} livros (${percentage}%)`;
+          }
+        }
+      }
     },
     scales: {
       x: {
@@ -121,12 +131,11 @@ export default function DashboardPage() {
     },
   };
 
-  // Configuração do gráfico de pizza
   const pieChartData = {
-    labels: estadoData.map(item => item.name),
+    labels: generoData.map(item => generoLabels[item.nome as keyof typeof generoLabels] || item.nome),
     datasets: [
       {
-        data: estadoData.map(item => item.value),
+        data: generoData.map(item => item.quantidade),
         backgroundColor: COLORS,
       },
     ],
@@ -139,6 +148,17 @@ export default function DashboardPage() {
       legend: {
         position: 'right' as const,
       },
+      tooltip: {
+        callbacks: {
+          label: function(context: any) {
+            const label = context.label || '';
+            const value = context.raw || 0;
+            const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
+            const percentage = ((value * 100) / total).toFixed(1);
+            return `${label}: ${value} (${percentage}%)`;
+          }
+        }
+      }
     },
   };
 
@@ -209,36 +229,54 @@ export default function DashboardPage() {
         </div>
         
         <div className="grid gap-4 md:grid-cols-2">
-          <Card>
+          <Card className="card-dashboard">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BarChart className="h-5 w-5" />
-                <span>Livros por Gênero</span>
+                <span>Estado de Conservação</span>
               </CardTitle>
-              <CardDescription>Distribuição do acervo por categorias</CardDescription>
+              <CardDescription>Condição atual dos livros no acervo</CardDescription>
             </CardHeader>
-            <CardContent className="h-80">
+            <CardContent className="card-content">
               {loading ? (
                 <Skeleton className="h-full w-full" />
+              ) : conservacaoData && conservacaoData.length > 0 ? (
+                <div className="h-full w-full">
+                  <Bar 
+                    data={barChartData} 
+                    options={barChartOptions}
+                  />
+                </div>
               ) : (
-                <Bar data={barChartData} options={barChartOptions} />
+                <div className="flex h-full items-center justify-center text-muted-foreground">
+                  Nenhum dado disponível sobre o estado de conservação dos livros
+                </div>
               )}
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="card-dashboard">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BookOpenText className="h-5 w-5" />
-                <span>Estado de Conservação</span>
+                <span>Gêneros de livros no acervo</span>
               </CardTitle>
-              <CardDescription>Condição dos livros no acervo</CardDescription>
+              <CardDescription>Distribuição por categorias</CardDescription>
             </CardHeader>
-            <CardContent className="h-80">
+            <CardContent className="card-content">
               {loading ? (
                 <Skeleton className="h-full w-full" />
+              ) : generoData && generoData.length > 0 ? (
+                <div className="h-full w-full">
+                  <Pie 
+                    data={pieChartData} 
+                    options={pieChartOptions}
+                  />
+                </div>
               ) : (
-                <Pie data={pieChartData} options={pieChartOptions} />
+                <div className="flex h-full items-center justify-center text-muted-foreground">
+                  Nenhum dado disponível sobre os gêneros dos livros
+                </div>
               )}
             </CardContent>
           </Card>

@@ -49,11 +49,12 @@ export type PageResponse<T> = {
 export interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, senha: string) => Promise<void>;
-  register: (user: { nome: string; email: string; senha: string; idade: number }) => Promise<void>;
-  logout: () => void;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  login: (email: string, senha: string) => Promise<void>;
+  register: (userData: { nome: string; email: string; senha: string; idade: number }) => Promise<void>;
+  logout: () => void;
+  updateUser: (userData: Partial<User>) => void;
 }
 
 export interface BookFormData {
@@ -83,7 +84,8 @@ export const generoLabels = {
   TECNICO: 'Técnico'
 };
 
-export const estadoConservacaoLabels = {
+export const estadoConservacaoLabels: Record<string, string> = {
+  NOVO: 'Novo',
   OTIMO: 'Ótimo',
   BOM: 'Bom',
   REGULAR: 'Regular',
@@ -109,4 +111,9 @@ export interface LivroDTO {
   estadoConservacao: EstadoConservacao;
   sinopse?: string;
   doadorId?: string;
+}
+
+export interface GeneroEstatistica {
+  nome: string;
+  quantidade: number;
 }

@@ -31,7 +31,7 @@ const profileSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
 export default function PerfilPage() {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, updateUser } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -65,10 +65,14 @@ export default function PerfilPage() {
         idade: data.idade,
       });
       
+      updateUser({
+        nome: data.nome,
+        idade: data.idade
+      });
     
       toast({
         title: "Perfil atualizado",
-        description: "As alterações foram salvas com sucesso. Faça login novamente para ver as mudanças.",
+        description: "As alterações foram salvas com sucesso.",
       });
       
       setIsEditing(false);

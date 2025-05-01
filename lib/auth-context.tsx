@@ -17,9 +17,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Initialize user from localStorage on component mount
   useEffect(() => {
     try {
-      const savedUser = localStorage.getItem('user');
-      const token = localStorage.getItem('token');
-      
+    const savedUser = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
+    
       if (savedUser && token && savedUser !== 'undefined') {
         const parsedUser = JSON.parse(savedUser);
         // Verifica se o objeto do usuário tem todas as propriedades necessárias
@@ -60,9 +60,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw new Error('Dados do usuário incompletos');
       }
 
+      // Remove a senha antes de salvar no localStorage
+      const { senha: _, ...userWithoutPassword } = data.usuario;
+
       localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.usuario));
-      setUser(data.usuario);
+      localStorage.setItem('user', JSON.stringify(userWithoutPassword));
+      setUser(userWithoutPassword);
       
       toast({
         title: "Login realizado com sucesso",
@@ -90,9 +93,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       setLoading(true);
       const data = await authApi.register(userData);
+
+      // Remove a senha antes de salvar no localStorage
+      const { senha: _, ...userWithoutPassword } = data.usuario;
+
       localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.usuario));
-      setUser(data.usuario);
+      localStorage.setItem('user', JSON.stringify(userWithoutPassword));
+      setUser(userWithoutPassword);
       
       toast({
         title: "Registro realizado com sucesso",
@@ -124,19 +131,37 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
   };
 
+  const updateUser = (userData: Partial<User>) => {
+    if (user) {
+      // Garantir que apenas as propriedades do tipo User sejam atualizadas
+      const updatedUser = {
+        ...user,
+        nome: userData.nome ?? user.nome,
+        email: userData.email ?? user.email,
+        idade: userData.idade ?? user.idade,
+        role: userData.role ?? user.role,
+      };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    }
+  };
+
   const isAuthenticated = !!user;
   const isAdmin = user?.role === 'ADMIN';
 
+  const value = {
+    user,
+    loading,
+    isAuthenticated,
+    isAdmin,
+    login,
+    register,
+    logout,
+    updateUser
+  };
+
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      loading, 
-      login, 
-      register, 
-      logout, 
-      isAuthenticated, 
-      isAdmin 
-    }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
