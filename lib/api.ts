@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { LivroDTO } from './types';
 
-export const API_URL = 'https://minha1api.duckdns.org/';
+export const API_URL = 'https://api.n8nvinicius.dev/';
 // export const API_URL = 'http://localhost:8080/';
 
 const api = axios.create({
