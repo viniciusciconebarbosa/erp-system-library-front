@@ -28,7 +28,8 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (isBrowser && error.response?.status === 401) {
+    const isLoginRoute = error.config?.url?.includes('/api/auth/login');
+    if (isBrowser && error.response?.status === 401 && !isLoginRoute) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
@@ -49,7 +50,6 @@ export const authApi = {
         data: error.response?.data,
         message: error.message
       });
-      throw error;
     }
   },
   register: async (userData: { nome: string; email: string; senha: string; idade: number }) => {

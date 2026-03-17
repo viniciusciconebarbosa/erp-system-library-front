@@ -37,7 +37,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     } catch (error) {
       // Se houver erro ao parsear, limpa o localStorage
-      console.error('Erro ao carregar dados do usuário:', error);
       localStorage.removeItem('token');
       localStorage.removeItem('user');
     } finally {
@@ -49,15 +48,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       setLoading(true);
       const data = await authApi.login(email, senha);
-      
-      // Verifica se os dados necessários estão presentes
+
+// Verificação de segurança: Se não tem token ou usuário, pare aqui!
       if (!data || !data.token || !data.usuario) {
-        throw new Error('Dados de login inválidos');
+        toast({
+          variant: "destructive",
+          title: "Erro na autenticação",
+          description: "Servidor não retornou os dados necessários.",
+        });
+        return; // <--- Importante para não tentar salvar lixo no localStorage
       }
 
-      // Verifica se o objeto do usuário tem todas as propriedades necessárias
+      // Validação extra dos campos
       if (!data.usuario.nome || !data.usuario.email || !data.usuario.role) {
-        throw new Error('Dados do usuário incompletos');
+        toast({
+          variant: "destructive",
+          title: "Perfil incompleto",
+          description: "Seus dados de perfil estão faltando informações.",
+        });
+        return;
       }
 
       // Remove a senha antes de salvar no localStorage
@@ -74,16 +83,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       router.push('/dashboard');
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 
-                         error.message || 
-                         "Ocorreu um erro ao tentar fazer login.";
-      
+
+      const message = error.response?.data?.message || "Email ou senha incorretos.";
+
       toast({
         variant: "destructive",
         title: "Erro ao fazer login",
-        description: errorMessage,
+        description: message,
       });
-      throw error;
+
+    //  throw error;
     } finally {
       setLoading(false);
     }
@@ -108,12 +117,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       router.push('/dashboard');
     } catch (error: any) {
+
+      const errorMessage = error.response?.data?.message || "Erro ao tentar fazer login.";
       toast({
         variant: "destructive",
         title: "Erro ao registrar",
-        description: error.response?.data?.message || "Ocorreu um erro ao tentar registrar.",
+        description: errorMessage,
       });
-      throw error;
+
     } finally {
       setLoading(false);
     }

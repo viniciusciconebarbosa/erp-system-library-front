@@ -37,11 +37,12 @@ export function LoginForm() {
   });
 
   async function onSubmit(values: LoginValues) {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       await login(values.email, values.senha);
+
     } catch (error) {
-      console.error('Login error:', error);
+
     } finally {
       setIsLoading(false);
     }
@@ -60,7 +61,13 @@ export function LoginForm() {
       </CardHeader>
       <CardContent className="space-y-4">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form
+              onSubmit={(e) => {
+                form.handleSubmit(onSubmit)(e);
+              }}
+              className="space-y-4"
+          >
+
             {formFields.map(({ name, label, placeholder, type }) => (
               <FormField
                 key={name}
@@ -82,9 +89,9 @@ export function LoginForm() {
                 )}
               />
             ))}
-            <Button 
-              type="submit" 
-              className="w-full" 
+            <Button
+              type="submit"
+              className="w-full"
               disabled={isLoading}
             >
               {isLoading ? 'Entrando...' : 'Entrar'}

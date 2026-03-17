@@ -8,6 +8,14 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Biblioteca Comunitária',
   description: 'Sistema de gerenciamento para biblioteca comunitária',
+    icons: {
+        icon: [
+            {
+                url: '/favicon.ico',
+                sizes: 'any',
+            },
+        ],
+    },
 };
 
 export default function RootLayout({
