@@ -58,9 +58,7 @@ export default function LocacoesPage() {
       }
       
       setLocacoes(Array.isArray(response) ? response : []);
-      
-      // Log para debug
-      console.log('Locações carregadas:', response);
+
     } catch (error) {
       console.error('Error fetching locacoes:', error);
       toast({
