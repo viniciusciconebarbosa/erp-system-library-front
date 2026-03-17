@@ -50,7 +50,6 @@ export default function DashboardPage() {
       setLoading(true);
       
       const livrosData = await livrosApi.getAll();
-      console.log('Dados dos livros:', livrosData);
       setTotalLivros(livrosData.length);
       
       const disponiveis = livrosData.filter((livro: Book) => livro.disponivelLocacao).length;
@@ -99,8 +98,6 @@ export default function DashboardPage() {
       },
     ],
   };
-
-  console.log('Dados do gráfico de barras:', barChartData);
 
   const barChartOptions = {
     indexAxis: 'y' as const,

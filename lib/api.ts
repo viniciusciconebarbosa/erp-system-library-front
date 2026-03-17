@@ -42,14 +42,9 @@ export const authApi = {
   login: async (email: string, senha: string) => {
     try {
       const response = await api.post('/api/auth/login', { email, senha });
-      console.log('Resposta do login:', response.data);
       return response.data;
     } catch (error: any) {
-      console.error('Erro no login:', {
-        status: error.response?.status,
-        data: error.response?.data,
-        message: error.message
-      });
+      return error
     }
   },
   register: async (userData: { nome: string; email: string; senha: string; idade: number }) => {

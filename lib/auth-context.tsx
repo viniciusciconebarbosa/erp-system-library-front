@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         toast({
           variant: "destructive",
           title: "Erro na autenticação",
-          description: "Servidor não retornou os dados necessários.",
+          description: data.response.data.message,
         });
         return; // <--- Importante para não tentar salvar lixo no localStorage
       }
