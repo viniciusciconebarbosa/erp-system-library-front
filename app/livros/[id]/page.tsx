@@ -183,7 +183,7 @@ export default function LivroDetalhesPage() {
               <img
                 src={livro.capaFoto || 'https://placehold.co/300x450/e2e8f0/1e293b?text=Sem+Capa'}
                 alt={livro.titulo}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-fill"
               />
             </div>
             
