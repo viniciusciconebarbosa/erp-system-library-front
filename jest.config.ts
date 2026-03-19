@@ -21,8 +21,8 @@ const config: Config = {
   verbose: true,
   testTimeout: 10000,
   clearMocks: true,
-  resetMocks: false,
-  restoreMocks: false,
+  resetMocks: true,
+  restoreMocks: true,
 };
 
 export default createJestConfig(config);

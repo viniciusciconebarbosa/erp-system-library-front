@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { usuariosApi } from '@/lib/api';
 import { User } from '@/lib/types';
@@ -33,87 +33,66 @@ export default function UsuariosPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  
+
   const { toast } = useToast();
   const { isAdmin } = useAuth();
   const router = useRouter();
+
+  const fetchUsuarios = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await usuariosApi.getAll(page, pageSize);
+
+      if (Array.isArray(response)) {
+        setUsuarios(response);
+        setTotalElements(response.length);
+        setTotalPages(1);
+      } else if (response.content && response.pageable) {
+        setUsuarios(response.content);
+        setTotalElements(response.pageable.totalElements);
+        setTotalPages(Math.ceil(response.pageable.totalElements / pageSize));
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao carregar usuários',
+          description: 'Formato de dados inválido.',
+        });
+      }
+    } catch {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao carregar usuários',
+        description: 'Não foi possível carregar a lista de usuários.',
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [page, pageSize, toast]);
 
   useEffect(() => {
     if (!isAdmin) {
       router.push('/dashboard');
       return;
     }
-    
     fetchUsuarios();
-  }, [page, pageSize, isAdmin, router]);
-
-  const fetchUsuarios = async () => {
-    try {
-      setLoading(true);
-      const response = await usuariosApi.getAll(page, pageSize);
-      console.log('Resposta da API de usuários:', response); // Debug
-
-      // Verifica se a resposta é um array (API sem paginação)
-      if (Array.isArray(response)) {
-        setUsuarios(response);
-        setTotalElements(response.length);
-        setTotalPages(1);
-      } 
-      // Verifica se a resposta tem o formato paginado esperado
-      else if (response.content && response.pageable) {
-      setUsuarios(response.content);
-      setTotalElements(response.pageable.totalElements);
-      setTotalPages(Math.ceil(response.pageable.totalElements / pageSize));
-      }
-      // Se a resposta tiver outro formato
-      else {
-        console.error('Formato de resposta inesperado:', response);
-        toast({
-          variant: "destructive",
-          title: "Erro ao carregar usuários",
-          description: "Formato de dados inválido.",
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      toast({
-        variant: "destructive",
-        title: "Erro ao carregar usuários",
-        description: "Não foi possível carregar a lista de usuários.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [fetchUsuarios, isAdmin, router]);
 
   const handleDelete = async () => {
     if (!userToDelete) return;
-    
     try {
       await usuariosApi.delete(userToDelete);
-      setUsuarios(usuarios.filter(user => user.id !== userToDelete));
-      
+      setUsuarios((prev) => prev.filter((u) => u.id !== userToDelete));
+      toast({ title: 'Usuário excluído', description: 'O usuário foi removido com sucesso.' });
+    } catch {
       toast({
-        title: "Usuário excluído",
-        description: "O usuário foi removido com sucesso.",
-      });
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      toast({
-        variant: "destructive",
-        title: "Erro ao excluir usuário",
-        description: "Não foi possível excluir o usuário.",
+        variant: 'destructive',
+        title: 'Erro ao excluir usuário',
+        description: 'Não foi possível excluir o usuário.',
       });
     } finally {
       setDeleteDialogOpen(false);
       setUserToDelete(null);
     }
-  };
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    setPage(0);
   };
 
   const columns: ColumnDef<User>[] = [
@@ -137,17 +116,10 @@ export default function UsuariosPage() {
         const role = row.original.role;
         return (
           <Badge variant={role === 'ADMIN' ? 'default' : 'secondary'}>
-            {role === 'ADMIN' ? (
-              <div className="flex items-center gap-1">
-                <Shield className="h-3 w-3" />
-                <span>Admin</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1">
-                <UserIcon className="h-3 w-3" />
-                <span>Comum</span>
-              </div>
-            )}
+            <div className="flex items-center gap-1">
+              {role === 'ADMIN' ? <Shield className="h-3 w-3" /> : <UserIcon className="h-3 w-3" />}
+              <span>{role === 'ADMIN' ? 'Admin' : 'Comum'}</span>
+            </div>
           </Badge>
         );
       },
@@ -192,15 +164,14 @@ export default function UsuariosPage() {
             </p>
           </div>
         </div>
-        
+
         <DataTable
           columns={columns}
           data={usuarios}
           searchColumn="Nome"
-          onSearch={handleSearch}
           pagination={{
             pageIndex: page,
-            pageSize: pageSize,
+            pageSize,
             pageCount: totalPages,
             onPageChange: setPage,
             onPageSizeChange: setPageSize,
@@ -208,7 +179,6 @@ export default function UsuariosPage() {
         />
       </div>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

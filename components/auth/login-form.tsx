@@ -6,62 +6,37 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
-import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { BookOpen } from 'lucide-react';
 
-const registerSchema = z.object({
-  nome: z.string().min(3, 'O nome deve ter pelo menos 3 caracteres'),
+const loginSchema = z.object({
   email: z.string().email('Email inválido'),
   senha: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres'),
-  idade: z.coerce.number().min(10, 'A idade mínima é 10 anos').max(120, 'Idade inválida'),
 });
 
-type RegisterValues = z.infer<typeof registerSchema>;
+type LoginValues = z.infer<typeof loginSchema>;
 
 const formFields = [
-  { name: 'nome', label: 'Nome completo', placeholder: 'Seu nome', type: 'text' },
   { name: 'email', label: 'Email', placeholder: 'seu@email.com', type: 'text' },
-  { name: 'senha', label: 'Senha', placeholder: 'Crie uma senha', type: 'password' },
-  { name: 'idade', label: 'Idade', placeholder: 'Sua idade', type: 'number' },
+  { name: 'senha', label: 'Senha', placeholder: 'Sua senha', type: 'password' },
 ] as const;
 
-export function RegisterForm() {
-  const { register } = useAuth();
+export function LoginForm() {
+  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm<RegisterValues>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      nome: '',
-      email: '',
-      senha: '',
-      idade: undefined,
-    },
+  const form = useForm<LoginValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', senha: '' },
   });
 
-  async function onSubmit(values: RegisterValues) {
+  async function onSubmit(values: LoginValues) {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      const userData = {
-        ...values,
-        nome: values.nome.trim(),
-        email: values.email.trim().toLowerCase(),
-        idade: Number(values.idade)
-      };
-      await register(userData);
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message 
-        || error.response?.data?.error 
-        || 'Ocorreu um erro ao tentar registrar.';
-      
-      toast.error("Erro ao registrar", {
-        description: errorMessage
-      });
-      console.error('Erro completo:', error);
+      await login(values.email, values.senha);
     } finally {
       setIsLoading(false);
     }
@@ -73,9 +48,9 @@ export function RegisterForm() {
         <div className="flex justify-center mb-4">
           <BookOpen size={40} className="text-primary" />
         </div>
-        <CardTitle className="text-2xl text-center">Registro</CardTitle>
+        <CardTitle className="text-2xl text-center">Login</CardTitle>
         <CardDescription className="text-center">
-          Crie sua conta na biblioteca comunitária
+          Entre na sua conta da biblioteca comunitária
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -90,37 +65,27 @@ export function RegisterForm() {
                   <FormItem>
                     <FormLabel>{label}</FormLabel>
                     <FormControl>
-                      <Input
-                        type={type}
-                        placeholder={placeholder}
-                        {...field}
-                        disabled={isLoading}
-                      />
+                      <Input type={type} placeholder={placeholder} {...field} disabled={isLoading} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             ))}
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={isLoading}
-            >
-              {isLoading ? 'Registrando...' : 'Registrar'}
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Entrando...' : 'Entrar'}
             </Button>
           </form>
         </Form>
       </CardContent>
       <CardFooter className="flex flex-col space-y-2">
         <div className="text-sm text-center text-muted-foreground">
-          Já tem uma conta?{' '}
-          <Link href="/login" className="text-primary hover:underline">
-            Faça login
+          Não tem uma conta?{' '}
+          <Link href="/registro" className="text-primary hover:underline">
+            Registre-se
           </Link>
         </div>
       </CardFooter>
     </Card>
   );
 }
-

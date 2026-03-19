@@ -24,7 +24,6 @@ import * as z from 'zod';
 
 const profileSchema = z.object({
   nome: z.string().min(3, 'O nome deve ter pelo menos 3 caracteres'),
-  email: z.string().email('Email inválido').optional(),
   idade: z.coerce.number().min(10, 'A idade mínima é 10 anos').max(120, 'Idade inválida'),
 });
 
@@ -39,9 +38,8 @@ export default function PerfilPage() {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      nome: user?.nome || '',
-      email: user?.email || '',
-      idade: user?.idade || undefined,
+      nome: user?.nome ?? '',
+      idade: user?.idade,
     },
   });
 
@@ -49,7 +47,6 @@ export default function PerfilPage() {
     if (user) {
       form.reset({
         nome: user.nome,
-        email: user.email,
         idade: user.idade,
       });
     }
@@ -76,8 +73,7 @@ export default function PerfilPage() {
       });
       
       setIsEditing(false);
-    } catch (error) {
-      console.error('Error updating profile:', error);
+    } catch {
       toast({
         variant: "destructive",
         title: "Erro ao atualizar perfil",
@@ -139,19 +135,11 @@ export default function PerfilPage() {
                     )}
                   />
                   
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input {...field} disabled />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <p className="text-base py-2 text-muted-foreground">{user.email}</p>
+                    <p className="text-xs text-muted-foreground">O email não pode ser alterado.</p>
+                  </FormItem>
                   
                   <FormField
                     control={form.control}

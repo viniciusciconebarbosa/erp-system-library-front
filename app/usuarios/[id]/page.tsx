@@ -82,8 +82,7 @@ export default function UsuarioDetalhesPage() {
           idade: userData.idade,
           role: userData.role,
         });
-      } catch (error) {
-        console.error('Error fetching user:', error);
+      } catch {
         toast({
           variant: "destructive",
           title: "Erro ao carregar usuário",
@@ -116,8 +115,7 @@ export default function UsuarioDetalhesPage() {
         title: "Usuário atualizado",
         description: "As alterações foram salvas com sucesso.",
       });
-    } catch (error) {
-      console.error('Error updating user:', error);
+    } catch {
       toast({
         variant: "destructive",
         title: "Erro ao atualizar usuário",

@@ -27,8 +27,7 @@ export default function EditarLivroPage() {
         setLoading(true);
         const livroData = await livrosApi.getById(id as string);
         setLivro(livroData);
-      } catch (error) {
-        console.error('Error fetching book:', error);
+      } catch {
         toast({
           variant: "destructive",
           title: "Erro ao carregar livro",
@@ -54,7 +53,6 @@ export default function EditarLivroPage() {
       });
       router.push(`/livros/${id}`);
     } catch (error) {
-      console.error('Error updating book:', error);
       toast({
         variant: "destructive",
         title: "Erro ao atualizar livro",

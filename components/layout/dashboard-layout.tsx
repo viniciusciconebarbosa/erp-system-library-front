@@ -1,12 +1,11 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { Header } from '@/components/layout/header';
 import { Sidebar } from '@/components/layout/sidebar';
 import { useAuth } from '@/lib/auth-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -37,7 +36,7 @@ export function DashboardLayout({ children, title = 'Dashboard' }: DashboardLayo
   }
 
   if (!isAuthenticated) {
-    return null; // Will redirect in the useEffect
+    return null;
   }
 
   return (

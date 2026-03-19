@@ -19,6 +19,13 @@ interface HeaderProps {
   title: string;
 }
 
+function getInitials(nome: string | undefined): string {
+  if (!nome) return 'U';
+  const names = nome.split(' ');
+  if (names.length === 1) return names[0].charAt(0).toUpperCase();
+  return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
+}
+
 export function Header({ title }: HeaderProps) {
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
@@ -27,17 +34,6 @@ export function Header({ title }: HeaderProps) {
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  if (!mounted) {
-    return null;
-  }
-
-  const getInitials = () => {
-    if (!user || !user.nome) return 'U';
-    const names = user.nome.split(' ');
-    if (names.length === 1) return names[0].charAt(0).toUpperCase();
-    return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
-  };
 
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-6">
@@ -49,9 +45,10 @@ export function Header({ title }: HeaderProps) {
           variant="outline"
           size="icon"
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          suppressHydrationWarning
         >
-          {theme === 'dark' ? (
-            <Sun className="h-5 w-5" />
+          {mounted ? (
+            theme === 'dark' ? <Sun className="h-5 w-5" /> : <MoonStar className="h-5 w-5" />
           ) : (
             <MoonStar className="h-5 w-5" />
           )}
@@ -60,22 +57,22 @@ export function Header({ title }: HeaderProps) {
 
         <Button variant="outline" size="icon">
           <Bell className="h-5 w-5" />
-          <span className="sr-only">Notifications</span>
+          <span className="sr-only">Notificações</span>
         </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
               <Avatar className="h-8 w-8">
-                <AvatarFallback>{getInitials()}</AvatarFallback>
+                <AvatarFallback>{getInitials(user?.nome)}</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <div className="flex items-center justify-start gap-2 p-2">
               <div className="flex flex-col space-y-1 leading-none">
-                <p className="font-medium">{user?.nome || 'Usuário'}</p>
-                <p className="text-sm text-muted-foreground">{user?.email || ''}</p>
+                <p className="font-medium">{user?.nome ?? 'Usuário'}</p>
+                <p className="text-sm text-muted-foreground">{user?.email ?? ''}</p>
               </div>
             </div>
             <DropdownMenuSeparator />

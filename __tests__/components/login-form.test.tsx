@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { LoginForm } from '@/components/login-form';
+import { LoginForm } from '@/components/auth/login-form';
 import { useAuth } from '@/lib/auth-context';
 
 // Mock do useAuth hook

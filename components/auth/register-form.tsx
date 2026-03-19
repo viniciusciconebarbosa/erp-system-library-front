@@ -6,43 +6,54 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { BookOpen } from 'lucide-react';
 
-const loginSchema = z.object({
+const registerSchema = z.object({
+  nome: z.string().min(3, 'O nome deve ter pelo menos 3 caracteres'),
   email: z.string().email('Email inválido'),
   senha: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres'),
+  idade: z.coerce.number().min(10, 'A idade mínima é 10 anos').max(120, 'Idade inválida'),
 });
 
-type LoginValues = z.infer<typeof loginSchema>;
+type RegisterValues = z.infer<typeof registerSchema>;
 
 const formFields = [
+  { name: 'nome', label: 'Nome completo', placeholder: 'Seu nome', type: 'text' },
   { name: 'email', label: 'Email', placeholder: 'seu@email.com', type: 'text' },
-  { name: 'senha', label: 'Senha', placeholder: 'Sua senha', type: 'password' },
+  { name: 'senha', label: 'Senha', placeholder: 'Crie uma senha', type: 'password' },
+  { name: 'idade', label: 'Idade', placeholder: 'Sua idade', type: 'number' },
 ] as const;
 
-export function LoginForm() {
-  const { login } = useAuth();
+export function RegisterForm() {
+  const { register } = useAuth();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm<LoginValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: '',
-      senha: '',
-    },
+  const form = useForm<RegisterValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: { nome: '', email: '', senha: '', idade: undefined },
   });
 
-  async function onSubmit(values: LoginValues) {
-    setIsLoading(true);
+  async function onSubmit(values: RegisterValues) {
     try {
-      await login(values.email, values.senha);
-
-    } catch (error) {
-
+      setIsLoading(true);
+      await register({
+        ...values,
+        nome: values.nome.trim(),
+        email: values.email.trim().toLowerCase(),
+        idade: Number(values.idade),
+      });
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao registrar',
+        description: error.response?.data?.message ?? 'Ocorreu um erro ao tentar registrar.',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -54,20 +65,14 @@ export function LoginForm() {
         <div className="flex justify-center mb-4">
           <BookOpen size={40} className="text-primary" />
         </div>
-        <CardTitle className="text-2xl text-center">Login</CardTitle>
+        <CardTitle className="text-2xl text-center">Registro</CardTitle>
         <CardDescription className="text-center">
-          Entre na sua conta da biblioteca comunitária
+          Crie sua conta na biblioteca comunitária
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <Form {...form}>
-          <form
-              onSubmit={(e) => {
-                form.handleSubmit(onSubmit)(e);
-              }}
-              className="space-y-4"
-          >
-
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {formFields.map(({ name, label, placeholder, type }) => (
               <FormField
                 key={name}
@@ -77,33 +82,24 @@ export function LoginForm() {
                   <FormItem>
                     <FormLabel>{label}</FormLabel>
                     <FormControl>
-                      <Input
-                        type={type}
-                        placeholder={placeholder}
-                        {...field}
-                        disabled={isLoading}
-                      />
+                      <Input type={type} placeholder={placeholder} {...field} disabled={isLoading} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             ))}
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading}
-            >
-              {isLoading ? 'Entrando...' : 'Entrar'}
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Registrando...' : 'Registrar'}
             </Button>
           </form>
         </Form>
       </CardContent>
       <CardFooter className="flex flex-col space-y-2">
         <div className="text-sm text-center text-muted-foreground">
-          Não tem uma conta?{' '}
-          <Link href="/registro" className="text-primary hover:underline">
-            Registre-se
+          Já tem uma conta?{' '}
+          <Link href="/login" className="text-primary hover:underline">
+            Faça login
           </Link>
         </div>
       </CardFooter>

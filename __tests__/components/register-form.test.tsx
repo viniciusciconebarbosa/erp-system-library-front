@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { RegisterForm } from '@/components/register-form';
+import { RegisterForm } from '@/components/auth/register-form';
 import { useAuth } from '@/lib/auth-context';
 
 jest.mock('@/lib/auth-context', () => ({

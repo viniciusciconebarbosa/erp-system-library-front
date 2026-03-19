@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Book, BookFormData, generoLabels, classificacaoEtariaLabels, estadoConservacaoLabels } from '@/lib/types';
+import { Book, generoLabels, classificacaoEtariaLabels, estadoConservacaoLabels } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import {
@@ -36,7 +37,7 @@ const livroSchema = z.object({
   autor: z.string().min(3, 'O autor deve ter pelo menos 3 caracteres'),
   genero: z.enum(['FICCAO', 'NAO_FICCAO', 'TERROR', 'ROMANCE', 'EDUCACAO', 'TECNICO']),
   classificacaoEtaria: z.enum(['LIVRE', 'DOZE_ANOS', 'QUATORZE_ANOS', 'DEZESSEIS_ANOS', 'DEZOITO_ANOS']),
-  estadoConservacao: z.enum(['OTIMO', 'BOM', 'REGULAR', 'RUIM']),
+  estadoConservacao: z.enum(['NOVO', 'OTIMO', 'BOM', 'REGULAR', 'RUIM']),
   sinopse: z.string().min(10, 'A sinopse deve ter pelo menos 10 caracteres'),
   capaFoto: typeof window === 'undefined' 
     ? z.any() 
@@ -63,6 +64,7 @@ interface LivroFormProps {
 
 export function LivroForm({ livro, onSubmit }: LivroFormProps) {
   const { toast } = useToast();
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(livro?.capaFoto || null);
 
@@ -93,7 +95,6 @@ export function LivroForm({ livro, onSubmit }: LivroFormProps) {
     try {
       setIsSubmitting(true);
 
-      // Create a new FormData object
       const formData = new FormData();
       formData.append('titulo', values.titulo);
       formData.append('autor', values.autor);
@@ -102,7 +103,6 @@ export function LivroForm({ livro, onSubmit }: LivroFormProps) {
       formData.append('estadoConservacao', values.estadoConservacao);
       formData.append('sinopse', values.sinopse);
 
-      // Add image file if provided
       if (values.capaFoto) {
         formData.append('capaFoto', values.capaFoto);
       }
@@ -113,8 +113,7 @@ export function LivroForm({ livro, onSubmit }: LivroFormProps) {
         title: `Livro ${livro ? 'atualizado' : 'criado'} com sucesso`,
         description: `O livro "${values.titulo}" foi ${livro ? 'atualizado' : 'cadastrado'} na biblioteca.`,
       });
-    } catch (error) {
-      console.error('Error submitting form:', error);
+    } catch {
       toast({
         variant: "destructive",
         title: "Erro ao salvar livro",
@@ -317,7 +316,7 @@ export function LivroForm({ livro, onSubmit }: LivroFormProps) {
         </div>
 
         <div className="flex justify-end space-x-2">
-          <Button variant="outline" type="button" disabled={isSubmitting}>
+          <Button variant="outline" type="button" onClick={() => router.back()} disabled={isSubmitting}>
             Cancelar
           </Button>
           <Button type="submit" disabled={isSubmitting}>

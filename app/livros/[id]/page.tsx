@@ -62,8 +62,7 @@ export default function LivroDetalhesPage() {
         setLoading(true);
         const livroData = await livrosApi.getById(id as string);
         setLivro(livroData);
-      } catch (error) {
-        console.error('Error fetching book:', error);
+      } catch {
         toast({
           variant: "destructive",
           title: "Erro ao carregar livro",
@@ -90,8 +89,7 @@ export default function LivroDetalhesPage() {
         description: "O livro foi removido com sucesso.",
       });
       router.push('/livros');
-    } catch (error) {
-      console.error('Error deleting book:', error);
+    } catch {
       toast({
         variant: "destructive",
         title: "Erro ao excluir livro",
@@ -116,8 +114,7 @@ export default function LivroDetalhesPage() {
         title: "Locação realizada",
         description: "O livro foi reservado com sucesso.",
       });
-    } catch (error) {
-      console.error('Error reserving book:', error);
+    } catch {
       toast({
         variant: "destructive",
         title: "Erro ao realizar locação",

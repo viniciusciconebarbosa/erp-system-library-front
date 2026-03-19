@@ -16,8 +16,8 @@ import {
 
 interface LivroCardProps {
   livro: Book;
-  onLocacao?: (id: string) => void;
-  onDelete?: (id: string) => void;
+  onLocacao?: (livro: Book) => void;
+  onDelete?: (livro: Book) => void;
 }
 
 export function LivroCard({ livro, onLocacao, onDelete }: LivroCardProps) {
@@ -33,8 +33,8 @@ export function LivroCard({ livro, onLocacao, onDelete }: LivroCardProps) {
         />
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
           <div className="flex flex-wrap gap-1">
-            <Badge variant={livro.disponivelLocacao ? "default" : "destructive"}>
-              {livro.disponivelLocacao ? "Disponível" : "Indisponível"}
+            <Badge variant={livro.disponivelLocacao ? 'default' : 'destructive'}>
+              {livro.disponivelLocacao ? 'Disponível' : 'Indisponível'}
             </Badge>
             <Badge variant="outline" className="bg-background/80">
               {generoLabels[livro.genero]}
@@ -50,9 +50,7 @@ export function LivroCard({ livro, onLocacao, onDelete }: LivroCardProps) {
         <p className="line-clamp-1 text-sm text-muted-foreground">{livro.autor}</p>
         <div className="mt-2">
           <span className="text-xs text-muted-foreground">Estado: </span>
-          <span className="text-xs font-medium">
-            {estadoConservacaoLabels[livro.estadoConservacao]}
-          </span>
+          <span className="text-xs font-medium">{estadoConservacaoLabels[livro.estadoConservacao]}</span>
         </div>
       </CardContent>
       <CardFooter className="flex justify-between gap-2 p-4 pt-0">
@@ -66,15 +64,11 @@ export function LivroCard({ livro, onLocacao, onDelete }: LivroCardProps) {
                 </Link>
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
-              <p>Ver detalhes</p>
-            </TooltipContent>
+            <TooltipContent>Ver detalhes</TooltipContent>
           </Tooltip>
-        </TooltipProvider>
 
-        {isAdmin && (
-          <>
-            <TooltipProvider>
+          {isAdmin && (
+            <>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button variant="outline" size="icon" asChild>
@@ -84,52 +78,42 @@ export function LivroCard({ livro, onLocacao, onDelete }: LivroCardProps) {
                     </Link>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>Editar livro</p>
-                </TooltipContent>
+                <TooltipContent>Editar livro</TooltipContent>
               </Tooltip>
-            </TooltipProvider>
 
-            <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="icon"
-                    onClick={() => onDelete && onDelete(livro.id)}
+                    onClick={() => onDelete?.(livro)}
                   >
                     <Trash className="h-4 w-4" />
                     <span className="sr-only">Excluir</span>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>Excluir livro</p>
-                </TooltipContent>
+                <TooltipContent>Excluir livro</TooltipContent>
               </Tooltip>
-            </TooltipProvider>
-          </>
-        )}
+            </>
+          )}
 
-        {livro.disponivelLocacao && (
-          <TooltipProvider>
+          {livro.disponivelLocacao && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button 
-                  variant="default" 
+                <Button
+                  variant="default"
                   size="sm"
                   className="ml-auto"
-                  onClick={() => onLocacao && onLocacao(livro.id)}
+                  onClick={() => onLocacao?.(livro)}
                 >
                   <BookOpen className="mr-2 h-4 w-4" />
                   Locar
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>
-                <p>Realizar locação</p>
-              </TooltipContent>
+              <TooltipContent>Realizar locação</TooltipContent>
             </Tooltip>
-          </TooltipProvider>
-        )}
+          )}
+        </TooltipProvider>
       </CardFooter>
     </Card>
   );

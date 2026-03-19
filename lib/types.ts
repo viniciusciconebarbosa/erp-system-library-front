@@ -1,8 +1,18 @@
+// ===== Enums e Tipos Base =====
+
+export type UserRole = 'ADMIN' | 'COMUM';
+export type Genero = 'FICCAO' | 'NAO_FICCAO' | 'TERROR' | 'ROMANCE' | 'EDUCACAO' | 'TECNICO';
+export type ClassificacaoEtaria = 'LIVRE' | 'DOZE_ANOS' | 'QUATORZE_ANOS' | 'DEZESSEIS_ANOS' | 'DEZOITO_ANOS';
+export type EstadoConservacao = 'NOVO' | 'OTIMO' | 'BOM' | 'REGULAR' | 'RUIM';
+export type StatusLocacao = 'ATIVA' | 'FINALIZADA' | 'ATRASADA' | 'CANCELADA';
+
+// ===== Entidades =====
+
 export type User = {
   id: string;
   nome: string;
   email: string;
-  role: 'ADMIN' | 'COMUM';
+  role: UserRole;
   idade: number;
 };
 
@@ -10,11 +20,11 @@ export type Book = {
   id: string;
   titulo: string;
   autor: string;
-  genero: 'FICCAO' | 'NAO_FICCAO' | 'TERROR' | 'ROMANCE' | 'EDUCACAO' | 'TECNICO';
+  genero: Genero;
   capaFoto: string;
   disponivelLocacao: boolean;
-  classificacaoEtaria: 'LIVRE' | 'DOZE_ANOS' | 'QUATORZE_ANOS' | 'DEZESSEIS_ANOS' | 'DEZOITO_ANOS';
-  estadoConservacao: 'OTIMO' | 'BOM' | 'REGULAR' | 'RUIM';
+  classificacaoEtaria: ClassificacaoEtaria;
+  estadoConservacao: EstadoConservacao;
   sinopse: string;
 };
 
@@ -34,17 +44,29 @@ export type Loan = {
   };
   dataLocacao: string;
   dataDevolucao: string | null;
-  status: 'ATIVA' | 'FINALIZADA' | 'ATRASADA' | 'CANCELADA';
+  status: StatusLocacao;
 };
 
-export type PageResponse<T> = {
-  content: T[];
-  pageable: {
-    pageNumber: number;
-    pageSize: number;
-    totalElements: number;
-  };
-};
+// ===== DTOs =====
+
+export interface LivroDTO {
+  titulo: string;
+  autor: string;
+  genero: Genero;
+  classificacaoEtaria: ClassificacaoEtaria;
+  estadoConservacao: EstadoConservacao;
+  sinopse?: string;
+  doadorId?: string;
+}
+
+export interface UpdateUserDTO {
+  nome?: string;
+  email?: string;
+  idade?: number;
+  senha?: string;
+}
+
+// ===== Contexto de Autenticação =====
 
 export interface AuthContextType {
   user: User | null;
@@ -57,63 +79,26 @@ export interface AuthContextType {
   updateUser: (userData: Partial<User>) => void;
 }
 
-export interface BookFormData {
-  titulo: string;
-  autor: string;
-  genero: Book['genero'];
-  capaFoto?: File;
-  classificacaoEtaria: Book['classificacaoEtaria'];
-  estadoConservacao: Book['estadoConservacao'];
-  sinopse: string;
-}
+// ===== Respostas da API =====
 
-export const classificacaoEtariaLabels = {
-  LIVRE: 'Livre',
-  DOZE_ANOS: '12 anos',
-  QUATORZE_ANOS: '14 anos',
-  DEZESSEIS_ANOS: '16 anos',
-  DEZOITO_ANOS: '18 anos'
+export type PageResponse<T> = {
+  content: T[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    totalElements: number;
+  };
 };
-
-export const generoLabels = {
-  FICCAO: 'Ficção',
-  NAO_FICCAO: 'Não-Ficção',
-  TERROR: 'Terror',
-  ROMANCE: 'Romance',
-  EDUCACAO: 'Educação',
-  TECNICO: 'Técnico'
-};
-
-export const estadoConservacaoLabels: Record<string, string> = {
-  NOVO: 'Novo',
-  OTIMO: 'Ótimo',
-  BOM: 'Bom',
-  REGULAR: 'Regular',
-  RUIM: 'Ruim'
-};
-
-export const statusLocacaoLabels = {
-  ATIVA: 'Ativa',
-  FINALIZADA: 'Finalizada',
-  ATRASADA: 'Atrasada',
-  CANCELADA: 'Cancelada'
-};
-
-export type Genero = 'FICCAO' | 'NAO_FICCAO' | 'ROMANCE' | 'TECNICO' | 'INFANTIL';
-export type ClassificacaoEtaria = 'LIVRE' | 'DEZ_ANOS' | 'DOZE_ANOS' | 'QUATORZE_ANOS' | 'DEZESSEIS_ANOS' | 'DEZOITO_ANOS';
-export type EstadoConservacao = 'NOVO' | 'OTIMO' | 'BOM' | 'REGULAR' | 'RUIM';
-
-export interface LivroDTO {
-  titulo: string;
-  autor: string;
-  genero: Genero;
-  classificacaoEtaria: ClassificacaoEtaria;
-  estadoConservacao: EstadoConservacao;
-  sinopse?: string;
-  doadorId?: string;
-}
 
 export interface GeneroEstatistica {
   nome: string;
   quantidade: number;
 }
+
+// Re-exporta labels para manter compatibilidade com imports existentes
+export {
+  generoLabels,
+  classificacaoEtariaLabels,
+  estadoConservacaoLabels,
+  statusLocacaoLabels,
+} from './constants';

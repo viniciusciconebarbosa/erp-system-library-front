@@ -4,9 +4,14 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/lib/api';
 import { User, AuthContextType } from '@/lib/types';
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from '@/hooks/use-toast';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const clearAuthData = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+};
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -14,31 +19,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const { toast } = useToast();
 
-  // Initialize user from localStorage on component mount
   useEffect(() => {
     try {
-    const savedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
-    
+      const savedUser = localStorage.getItem('user');
+      const token = localStorage.getItem('token');
+
       if (savedUser && token && savedUser !== 'undefined') {
         const parsedUser = JSON.parse(savedUser);
-        // Verifica se o objeto do usuário tem todas as propriedades necessárias
-        if (parsedUser && parsedUser.nome && parsedUser.email && parsedUser.role) {
+        if (parsedUser?.nome && parsedUser?.email && parsedUser?.role) {
           setUser(parsedUser);
         } else {
-          // Se os dados estiverem incompletos, limpa o localStorage
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
+          clearAuthData();
         }
       } else {
-        // Se não houver dados válidos, limpa o localStorage
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        clearAuthData();
       }
-    } catch (error) {
-      // Se houver erro ao parsear, limpa o localStorage
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+    } catch {
+      clearAuthData();
     } finally {
       setLoading(false);
     }
@@ -49,50 +46,41 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(true);
       const data = await authApi.login(email, senha);
 
-// Verificação de segurança: Se não tem token ou usuário, pare aqui!
-      if (!data || !data.token || !data.usuario) {
+      if (!data?.token || !data?.usuario) {
         toast({
-          variant: "destructive",
-          title: "Erro na autenticação",
-          description: data.response.data.message,
-        });
-        return; // <--- Importante para não tentar salvar lixo no localStorage
-      }
-
-      // Validação extra dos campos
-      if (!data.usuario.nome || !data.usuario.email || !data.usuario.role) {
-        toast({
-          variant: "destructive",
-          title: "Perfil incompleto",
-          description: "Seus dados de perfil estão faltando informações.",
+          variant: 'destructive',
+          title: 'Erro na autenticação',
+          description: data?.response?.data?.message ?? 'Email ou senha incorretos.',
         });
         return;
       }
 
-      // Remove a senha antes de salvar no localStorage
-      const { senha: _, ...userWithoutPassword } = data.usuario;
+      if (!data.usuario.nome || !data.usuario.email || !data.usuario.role) {
+        toast({
+          variant: 'destructive',
+          title: 'Perfil incompleto',
+          description: 'Seus dados de perfil estão faltando informações.',
+        });
+        return;
+      }
 
+      const { senha: _, ...userWithoutPassword } = data.usuario;
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(userWithoutPassword));
       setUser(userWithoutPassword);
-      
+
       toast({
-        title: "Login realizado com sucesso",
+        title: 'Login realizado com sucesso',
         description: `Bem-vindo, ${data.usuario.nome}!`,
       });
-      
+
       router.push('/dashboard');
     } catch (error: any) {
-
-      const message = error.response?.data?.message || "Email ou senha incorretos.";
-
       toast({
-        variant: "destructive",
-        title: "Erro ao fazer login",
-        description: message,
+        variant: 'destructive',
+        title: 'Erro ao fazer login',
+        description: error.response?.data?.message ?? 'Email ou senha incorretos.',
       });
-
-    //  throw error;
     } finally {
       setLoading(false);
     }
@@ -103,48 +91,60 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(true);
       const data = await authApi.register(userData);
 
-      // Remove a senha antes de salvar no localStorage
-      const { senha: _, ...userWithoutPassword } = data.usuario;
+      if (!data?.token || !data?.usuario) {
+        toast({
+          variant: 'destructive',
+          title: 'Erro no registro',
+          description: 'Resposta inválida do servidor.',
+        });
+        return;
+      }
 
+      if (!data.usuario.nome || !data.usuario.email || !data.usuario.role) {
+        toast({
+          variant: 'destructive',
+          title: 'Perfil incompleto',
+          description: 'Os dados retornados estão incompletos.',
+        });
+        return;
+      }
+
+      const { senha: _, ...userWithoutPassword } = data.usuario;
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(userWithoutPassword));
       setUser(userWithoutPassword);
-      
+
       toast({
-        title: "Registro realizado com sucesso",
-        description: "Sua conta foi criada e você já está logado.",
+        title: 'Registro realizado com sucesso',
+        description: 'Sua conta foi criada e você já está logado.',
       });
-      
+
       router.push('/dashboard');
     } catch (error: any) {
-
-      const errorMessage = error.response?.data?.message || "Erro ao tentar fazer login.";
       toast({
-        variant: "destructive",
-        title: "Erro ao registrar",
-        description: errorMessage,
+        variant: 'destructive',
+        title: 'Erro ao registrar',
+        description: error.response?.data?.message ?? 'Erro ao tentar registrar.',
       });
-
     } finally {
       setLoading(false);
     }
   };
 
   const logout = () => {
-    // Limpa todo o localStorage
-    localStorage.clear();
+    clearAuthData();
     setUser(null);
-    router.push('/login');
-    
+
     toast({
-      title: "Logout realizado",
-      description: "Você foi desconectado com sucesso.",
+      title: 'Logout realizado',
+      description: 'Você foi desconectado com sucesso.',
     });
+
+    router.push('/login');
   };
 
   const updateUser = (userData: Partial<User>) => {
     if (user) {
-      // Garantir que apenas as propriedades do tipo User sejam atualizadas
       const updatedUser = {
         ...user,
         nome: userData.nome ?? user.nome,
@@ -157,30 +157,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const isAuthenticated = !!user;
-  const isAdmin = user?.role === 'ADMIN';
-
-  const value = {
+  const value: AuthContextType = {
     user,
     loading,
-    isAuthenticated,
-    isAdmin,
+    isAuthenticated: !!user,
+    isAdmin: user?.role === 'ADMIN',
     login,
     register,
     logout,
-    updateUser
+    updateUser,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
