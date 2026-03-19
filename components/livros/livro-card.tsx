@@ -29,7 +29,7 @@ export function LivroCard({ livro, onLocacao, onDelete }: LivroCardProps) {
         <img
           src={livro.capaFoto || 'https://placehold.co/300x450/e2e8f0/1e293b?text=Sem+Capa'}
           alt={livro.titulo}
-          className="h-full w-full object-cover transform !transition-all !duration-700 !ease-out group-hover:scale-105"
+          className="h-full w-full object-fill transform !transition-all !duration-700 !ease-out group-hover:scale-105"
         />
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
           <div className="flex flex-wrap gap-1">
