@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { Book } from '@/lib/types';
 import { livrosApi } from '@/lib/api';
@@ -93,11 +94,14 @@ export function LivroDetails({ id }: LivroDetailsProps) {
 
       <div className="space-y-8">
         <div className="flex gap-6">
-          <img
-            src={livro.capaFoto || 'https://placehold.co/240x360/e5e7eb/a1a1aa?text=Sem+Capa'}
-            alt={`Capa do livro ${livro.titulo}`}
-            className="h-[360px] w-[240px] rounded-lg object-cover shadow-md"
-          />
+          <div className="relative h-[360px] w-[240px] shrink-0">
+            <Image
+              src={livro.capaFoto || 'https://placehold.co/240x360/e5e7eb/a1a1aa?text=Sem+Capa'}
+              alt={`Capa do livro ${livro.titulo}`}
+              fill
+              className="rounded-lg object-cover shadow-md"
+            />
+          </div>
           
           <div className="flex-1 space-y-4">
             <h1 className="text-3xl font-bold">{livro.titulo}</h1>

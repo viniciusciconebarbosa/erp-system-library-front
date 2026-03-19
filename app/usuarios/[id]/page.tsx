@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, Save, User as UserIcon, Shield, Pencil } from 'lucide-react';
+import { ChevronLeft, User as UserIcon, Shield, Pencil } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';

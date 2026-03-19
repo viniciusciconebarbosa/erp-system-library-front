@@ -28,13 +28,13 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   searchColumn?: string;
-  onSearch?: (value: string) => void;
+  onSearch?: (_value: string) => void;
   pagination?: {
     pageIndex: number;
     pageSize: number;
     pageCount: number;
-    onPageChange: (page: number) => void;
-    onPageSizeChange: (size: number) => void;
+    onPageChange: (_page: number) => void;
+    onPageSizeChange: (_size: number) => void;
   };
   className?: string;
 }

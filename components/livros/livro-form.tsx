@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,7 +28,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
-import { Upload, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
@@ -59,7 +60,7 @@ type LivroFormValues = z.infer<typeof livroSchema>;
 
 interface LivroFormProps {
   livro?: Book;
-  onSubmit: (data: FormData) => Promise<void>;
+  onSubmit: (_data: FormData) => Promise<void>;
 }
 
 export function LivroForm({ livro, onSubmit }: LivroFormProps) {
@@ -270,17 +271,18 @@ export function LivroForm({ livro, onSubmit }: LivroFormProps) {
             <FormField
               control={form.control}
               name="capaFoto"
-              render={({ field: { ref, value, onChange, ...fieldProps } }) => (
+              render={({ field: { ref, value: _value, onChange, ...fieldProps } }) => (
                 <FormItem>
                   <FormLabel>Capa do Livro</FormLabel>
                   <FormControl>
                     <Card className="overflow-hidden">
                       <div className="relative aspect-[2/3] w-full overflow-hidden bg-muted">
                         {previewUrl ? (
-                          <img
+                          <Image
                             src={previewUrl}
                             alt="Preview da capa"
-                            className="h-full w-full object-cover"
+                            fill
+                            className="object-cover"
                           />
                         ) : (
                           <div className="flex h-full items-center justify-center text-muted-foreground">

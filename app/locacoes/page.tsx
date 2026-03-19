@@ -1,6 +1,7 @@
 'use client';
 
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import Image from 'next/image';
 import { statusLocacaoLabels } from '@/lib/types';
 import { Loan } from '@/lib/types';
 import { format } from 'date-fns';
@@ -36,8 +37,14 @@ export default function LocacoesPage() {
       header: 'Livro',
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
-          <img src={getImageUrl(row.original.livro.capaFoto)} alt={row.original.livro.titulo}
-            className="h-[60px] w-[40px] object-cover rounded-sm" />
+          <div className="relative h-[60px] w-[40px] shrink-0">
+            <Image 
+              src={getImageUrl(row.original.livro.capaFoto)} 
+              alt={row.original.livro.titulo}
+              fill
+              className="object-cover rounded-sm" 
+            />
+          </div>
           <div>
             <div className="font-medium">{row.original.livro.titulo}</div>
             <div className="text-sm text-muted-foreground">{row.original.livro.autor}</div>

@@ -73,10 +73,10 @@ export interface AuthContextType {
   loading: boolean;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  login: (email: string, senha: string) => Promise<void>;
-  register: (userData: { nome: string; email: string; senha: string; idade: number }) => Promise<void>;
+  login: (_email: string, _senha: string) => Promise<void>;
+  register: (_userData: { nome: string; email: string; senha: string; idade: number }) => Promise<void>;
   logout: () => void;
-  updateUser: (userData: Partial<User>) => void;
+  updateUser: (_userData: Partial<User>) => void;
 }
 
 // ===== Respostas da API =====

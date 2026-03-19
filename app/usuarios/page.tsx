@@ -26,10 +26,10 @@ import {
 
 export default function UsuariosPage() {
   const [usuarios, setUsuarios] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
-  const [totalElements, setTotalElements] = useState(0);
+  const [_totalElements, setTotalElements] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<string | null>(null);

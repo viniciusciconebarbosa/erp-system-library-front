@@ -1,6 +1,7 @@
 'use client';
 
 import { Book, generoLabels, classificacaoEtariaLabels, estadoConservacaoLabels } from '@/lib/types';
+import Image from 'next/image';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,8 +17,8 @@ import {
 
 interface LivroCardProps {
   livro: Book;
-  onLocacao?: (livro: Book) => void;
-  onDelete?: (livro: Book) => void;
+  onLocacao?: (_livro: Book) => void;
+  onDelete?: (_livro: Book) => void;
 }
 
 export function LivroCard({ livro, onLocacao, onDelete }: LivroCardProps) {
@@ -26,12 +27,13 @@ export function LivroCard({ livro, onLocacao, onDelete }: LivroCardProps) {
   return (
     <Card className="group overflow-hidden transition-all duration-200 hover:shadow-md">
       <div className="relative aspect-[2/3] w-full overflow-hidden">
-        <img
+        <Image
           src={livro.capaFoto || 'https://placehold.co/300x450/e2e8f0/1e293b?text=Sem+Capa'}
           alt={livro.titulo}
-          className="h-full w-full object-fill transform !transition-all !duration-700 !ease-out group-hover:scale-105"
+          fill
+          className="object-fill transform !transition-all !duration-700 !ease-out group-hover:scale-105"
         />
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 z-10">
           <div className="flex flex-wrap gap-1">
             <Badge variant={livro.disponivelLocacao ? 'default' : 'destructive'}>
               {livro.disponivelLocacao ? 'Disponível' : 'Indisponível'}

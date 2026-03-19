@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { livrosApi, locacoesApi } from '@/lib/api';
@@ -19,7 +20,6 @@ import {
 import { 
   Card, 
   CardContent, 
-  CardDescription, 
   CardFooter, 
   CardHeader, 
   CardTitle 
@@ -176,11 +176,12 @@ export default function LivroDetalhesPage() {
         
         <div className="grid gap-6 md:grid-cols-3">
           <Card className="overflow-hidden md:col-span-1">
-            <div className="aspect-[2/3] w-full">
-              <img
+            <div className="relative aspect-[2/3] w-full">
+              <Image
                 src={livro.capaFoto || 'https://placehold.co/300x450/e2e8f0/1e293b?text=Sem+Capa'}
                 alt={livro.titulo}
-                className="h-full w-full object-fill"
+                fill
+                className="object-fill"
               />
             </div>
             
@@ -291,7 +292,7 @@ export default function LivroDetalhesPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta ação não pode ser desfeita. O livro "{livro.titulo}" será removido permanentemente do sistema.
+              Esta ação não pode ser desfeita. O livro &quot;{livro.titulo}&quot; será removido permanentemente do sistema.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -309,7 +310,7 @@ export default function LivroDetalhesPage() {
           <DialogHeader>
             <DialogTitle>Confirmar locação</DialogTitle>
             <DialogDescription>
-              Você está prestes a realizar a locação do livro "{livro.titulo}". Confirme para prosseguir.
+              Você está prestes a realizar a locação do livro &quot;{livro.titulo}&quot;. Confirme para prosseguir.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

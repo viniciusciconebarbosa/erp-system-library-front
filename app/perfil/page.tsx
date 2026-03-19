@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { usuariosApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { User as UserIcon, Shield, Save } from 'lucide-react';
+import { User as UserIcon, Shield } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import {
