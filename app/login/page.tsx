@@ -9,13 +9,13 @@ export default function LoginPage() {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
-/*
+
   useEffect(() => {
     if (!loading && isAuthenticated) {
       router.push('/dashboard');
     }
   }, [isAuthenticated, loading, router]);
-*/
+
 
   if (loading) {
     return (
