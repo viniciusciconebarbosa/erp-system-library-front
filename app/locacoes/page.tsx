@@ -36,8 +36,6 @@ import {
 } from 'lucide-react';
 
 export default function LocacoesPage() {
-    const userStorage = localStorage.getItem('user');
-    const id = userStorage ? JSON.parse(userStorage || '{}').id : null;
 	const [locacoes, setLocacoes] = useState<Loan[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [dialogAction, setDialogAction] = useState<{ type: 'devolver' | 'cancelar', id: string } | null>(null);
@@ -46,8 +44,10 @@ export default function LocacoesPage() {
 	const { user, isAdmin } = useAuth();
     
 	const fetchLocacoes = async () => {
-        try {
-            setLoading(true);
+		try {
+			const userStorage = localStorage.getItem('user');
+			const id = userStorage ? JSON.parse(userStorage || '{}').id : null;
+			setLoading(true);
 			let response;
             
 			if (!isAdmin && user) {
