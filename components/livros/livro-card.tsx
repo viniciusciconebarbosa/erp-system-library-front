@@ -25,7 +25,7 @@ export function LivroCard({ livro, onLocacao, onDelete }: LivroCardProps) {
   const { isAdmin } = useAuth();
 
   return (
-    <Card className="group overflow-hidden transition-all duration-200 hover:shadow-md">
+    <Card className="group overflow-hidden transition-all duration-200 hover:shadow-md h-full flex flex-col w-full max-w-[350px] mx-auto">
       <div className="relative aspect-[2/3] w-full overflow-hidden">
         <Image
           src={livro.capaFoto || 'https://placehold.co/300x450/e2e8f0/1e293b?text=Sem+Capa'}
@@ -47,7 +47,7 @@ export function LivroCard({ livro, onLocacao, onDelete }: LivroCardProps) {
           </div>
         </div>
       </div>
-      <CardContent className="p-4">
+      <CardContent className="p-4 flex-1">
         <h3 className="line-clamp-2 font-semibold tracking-tight">{livro.titulo}</h3>
         <p className="line-clamp-1 text-sm text-muted-foreground">{livro.autor}</p>
         <div className="mt-2">

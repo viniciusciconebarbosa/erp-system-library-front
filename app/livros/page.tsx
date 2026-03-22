@@ -34,7 +34,7 @@ export default function LivrosPage() {
   const renderBookGrid = () => {
     if (loading) {
       return (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: PAGE_SIZE }).map((_, i) => (
             <div key={i} className="flex flex-col space-y-3">
               <Skeleton className="h-[300px] w-full" />
@@ -42,7 +42,7 @@ export default function LivrosPage() {
               <Skeleton className="h-4 w-1/2" />
             </div>
           ))}
-        </div>
+        </section>
       );
     }
 
@@ -66,7 +66,7 @@ export default function LivrosPage() {
     }
 
     return (
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <section aria-label="Lista de Livros" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {paginatedBooks.map((livro) => (
           <LivroCard
             key={livro.id}
@@ -75,14 +75,14 @@ export default function LivrosPage() {
             onLocacao={openLocacaoDialog}
           />
         ))}
-      </div>
+      </section>
     );
   };
 
   return (
     <DashboardLayout title="Livros">
       <div className="flex flex-col space-y-6">
-        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+        <header className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div className="flex flex-1 items-center gap-2">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -122,7 +122,7 @@ export default function LivrosPage() {
               <Link href="/livros/novo"><Plus className="mr-2 h-4 w-4" />Novo Livro</Link>
             </Button>
           )}
-        </div>
+        </header>
 
         {renderBookGrid()}
 

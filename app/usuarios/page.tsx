@@ -156,16 +156,17 @@ export default function UsuariosPage() {
   return (
     <DashboardLayout title="Usuários">
       <div className="space-y-6">
-        <div className="flex flex-col md:flex-row justify-between gap-4">
+        <header className="flex flex-col md:flex-row justify-between gap-4">
           <div className="flex-1 space-y-1">
             <h2 className="text-xl font-semibold tracking-tight">Gerenciamento de Usuários</h2>
             <p className="text-sm text-muted-foreground">
               Visualize e gerencie todos os usuários da plataforma
             </p>
           </div>
-        </div>
+        </header>
 
-        <DataTable
+        <section aria-label="Lista de Usuários">
+          <DataTable
           columns={columns}
           data={usuarios}
           searchColumn="Nome"
@@ -176,7 +177,8 @@ export default function UsuariosPage() {
             onPageChange: setPage,
             onPageSizeChange: setPageSize,
           }}
-        />
+          />
+        </section>
       </div>
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

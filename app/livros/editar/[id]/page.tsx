@@ -115,5 +115,5 @@ export default function EditarLivroPage() {
         </div>
       </div>
     </DashboardLayout>
-  );
+  );  
 }

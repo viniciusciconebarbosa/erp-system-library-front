@@ -10,19 +10,19 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  ChevronLeft, 
-  Edit, 
-  Trash, 
+import {
+  ChevronLeft,
+  Edit,
+  Trash,
   BookOpen,
   Bookmark
 } from 'lucide-react';
-import { 
-  Card, 
-  CardContent, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
@@ -81,7 +81,7 @@ export default function LivroDetalhesPage() {
 
   const handleDelete = async () => {
     if (!livro) return;
-    
+
     try {
       await livrosApi.delete(livro.id);
       toast({
@@ -102,14 +102,14 @@ export default function LivroDetalhesPage() {
 
   const handleLocacao = async () => {
     if (!livro || !user) return;
-    
+
     try {
       await locacoesApi.create(livro.id, user.id);
       setLivro({
         ...livro,
         disponivelLocacao: false
       });
-      
+
       toast({
         title: "Locação realizada",
         description: "O livro foi reservado com sucesso.",
@@ -135,14 +135,14 @@ export default function LivroDetalhesPage() {
               Voltar para livros
             </Link>
           </Button>
-          
+
           <div className="grid gap-6 md:grid-cols-3">
-            <Card className="md:col-span-1">
+            <Card className="relative aspect-[2/3] w-full max-w-[300px] mx-auto mt-6 mb-4">
               <CardContent className="p-0">
                 <Skeleton className="aspect-[2/3] h-full w-full" />
               </CardContent>
             </Card>
-            
+
             <div className="space-y-6 md:col-span-2">
               <Skeleton className="h-10 w-3/4" />
               <Skeleton className="h-6 w-1/2" />
@@ -173,10 +173,10 @@ export default function LivroDetalhesPage() {
             </Link>
           </Button>
         </div>
-        
+
         <div className="grid gap-6 md:grid-cols-3">
           <Card className="overflow-hidden md:col-span-1">
-            <div className="relative aspect-[2/3] w-full">
+            <div className="relative aspect-[2/3] w-full max-w-[300px] mx-auto mt-6 mb-4">
               <Image
                 src={livro.capaFoto || 'https://placehold.co/300x450/e2e8f0/1e293b?text=Sem+Capa'}
                 alt={livro.titulo}
@@ -184,7 +184,7 @@ export default function LivroDetalhesPage() {
                 className="object-fill"
               />
             </div>
-            
+
             <CardContent className="p-4">
               <div className="flex flex-wrap gap-2">
                 <Badge variant={livro.disponivelLocacao ? "default" : "destructive"}>
@@ -197,7 +197,7 @@ export default function LivroDetalhesPage() {
                   {classificacaoEtariaLabels[livro.classificacaoEtaria]}
                 </Badge>
               </div>
-              
+
               <div className="mt-4">
                 <span className="text-sm font-medium">Estado de conservação:</span>
                 <span className="ml-2 text-sm">
@@ -205,7 +205,7 @@ export default function LivroDetalhesPage() {
                 </span>
               </div>
             </CardContent>
-            
+
             <CardFooter className="flex justify-between gap-2 p-4 pt-0">
               {isAdmin && (
                 <>
@@ -215,9 +215,9 @@ export default function LivroDetalhesPage() {
                       Editar
                     </Link>
                   </Button>
-                  
-                  <Button 
-                    variant="outline" 
+
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => setDeleteDialogOpen(true)}
                   >
@@ -226,9 +226,9 @@ export default function LivroDetalhesPage() {
                   </Button>
                 </>
               )}
-              
+
               {livro.disponivelLocacao && (
-                <Button 
+                <Button
                   className={isAdmin ? "mt-2 w-full" : ""}
                   onClick={() => setLocacaoDialogOpen(true)}
                 >
@@ -238,22 +238,22 @@ export default function LivroDetalhesPage() {
               )}
             </CardFooter>
           </Card>
-          
+
           <div className="space-y-6 md:col-span-2">
             <div>
               <h1 className="text-2xl font-bold">{livro.titulo}</h1>
               <p className="text-lg text-muted-foreground">por {livro.autor}</p>
             </div>
-            
+
             <Separator />
-            
+
             <div>
               <h2 className="mb-2 text-xl font-semibold">Sinopse</h2>
               <p className="text-muted-foreground whitespace-pre-line">{livro.sinopse}</p>
             </div>
-            
+
             <Separator />
-            
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">

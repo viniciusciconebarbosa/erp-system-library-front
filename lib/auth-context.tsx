@@ -42,8 +42,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const login = async (email: string, senha: string) => {
+   
+    setTimeout(() => {
+      setLoading(false);
+    }, 2000); 
     try {
-      setLoading(true);
       const data = await authApi.login(email, senha);
 
       if (!data?.token || !data?.usuario) {
@@ -69,12 +72,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       localStorage.setItem('user', JSON.stringify(userWithoutPassword));
       setUser(userWithoutPassword);
 
+      router.push('/dashboard');
       toast({
         title: 'Login realizado com sucesso',
         description: `Bem-vindo, ${data.usuario.nome}!`,
       });
 
-      router.push('/dashboard');
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -134,13 +137,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = () => {
     clearAuthData();
     setUser(null);
-
+    
+    router.push('/login');
+    
     toast({
       title: 'Logout realizado',
       description: 'Você foi desconectado com sucesso.',
     });
-
-    router.push('/login');
   };
 
   const updateUser = (userData: Partial<User>) => {

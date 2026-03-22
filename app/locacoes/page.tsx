@@ -16,7 +16,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
-import { CheckCircle2, Calendar, Clock } from 'lucide-react';
+import { CheckCircle2, Calendar, Clock, RefreshCcw } from 'lucide-react';
 import { useLocacoes } from '@/hooks/use-locacoes';
 
 const formatDate = (dateString: string) => {
@@ -121,7 +121,7 @@ export default function LocacoesPage() {
   return (
     <DashboardLayout title="Locações">
       <div className="space-y-6">
-        <div className="flex flex-col md:flex-row justify-between gap-4">
+        <header className="flex flex-col md:flex-row justify-between gap-4">
           <div className="flex-1 space-y-1">
             <h2 className="text-xl font-semibold tracking-tight">Locações de Livros</h2>
             <p className="text-sm text-muted-foreground">
@@ -131,14 +131,14 @@ export default function LocacoesPage() {
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={refresh} className="gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-              fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-              className="animate-spin" style={{ animationPlayState: loading ? 'running' : 'paused' }}>
-              <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-            </svg>
+             <RefreshCcw 
+               size={16} 
+               className="animate-spin" 
+               style={{ animationPlayState: loading ? 'running' : 'paused' }}
+             />
             Atualizar
           </Button>
-        </div>
+        </header>
 
         {loading ? (
           <div className="animate-pulse space-y-3">
@@ -153,9 +153,9 @@ export default function LocacoesPage() {
             </p>
           </div>
         ) : (
-          <div className="rounded-md border">
+          <section aria-label="Lista de Locações" className="rounded-md border">
             <DataTable columns={columns} data={locacoes} className="[&_.custom-cell]:p-0" />
-          </div>
+          </section>
         )}
       </div>
 

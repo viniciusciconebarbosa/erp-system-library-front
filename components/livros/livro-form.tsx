@@ -276,7 +276,7 @@ export function LivroForm({ livro, onSubmit }: LivroFormProps) {
                   <FormLabel>Capa do Livro</FormLabel>
                   <FormControl>
                     <Card className="overflow-hidden">
-                      <div className="relative aspect-[2/3] w-full overflow-hidden bg-muted">
+                      <div className="relative aspect-[2/3] w-full max-w-[300px] mx-auto mt-4 mb-2">
                         {previewUrl ? (
                           <Image
                             src={previewUrl}

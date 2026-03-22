@@ -4,7 +4,7 @@ import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { generoLabels, estadoConservacaoLabels } from '@/lib/types';
 import { useAuth } from '@/lib/auth-context';
-import { BookOpenText, Clock, Users, BookCheck, BarChart } from 'lucide-react';
+import { BookOpenText, Clock, Users, BookCheck, BarChart, RefreshCcw } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -18,6 +18,7 @@ import {
   Tooltip as ChartTooltip,
   Legend,
   ArcElement,
+  TooltipItem,
 } from 'chart.js';
 import { useDashboard } from '@/hooks/use-dashboard';
 
@@ -48,8 +49,8 @@ export default function DashboardPage() {
       legend: { display: false },
       tooltip: {
         callbacks: {
-          label: (context: any) => {
-            const value = context.raw || 0;
+          label: (context: TooltipItem<"bar">) => {
+            const value = (context.raw as number) || 0;
             const total = conservacaoData.reduce((acc, curr) => acc + curr.quantidade, 0);
             return `${value} livros (${((value / total) * 100).toFixed(1)}%)`;
           },
@@ -71,9 +72,10 @@ export default function DashboardPage() {
       legend: { position: 'right' as const },
       tooltip: {
         callbacks: {
-          label: (context: any) => {
+          label: (context: TooltipItem<"pie">) => {
             const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
-            return `${context.label}: ${context.raw} (${((context.raw * 100) / total).toFixed(1)}%)`;
+            const raw = context.raw as number;
+            return `${context.label}: ${raw} (${((raw * 100) / total).toFixed(1)}%)`;
           },
         },
       },
@@ -85,16 +87,16 @@ export default function DashboardPage() {
       <div className="space-y-8">
         <div className="flex justify-end">
           <Button variant="outline" size="sm" onClick={refresh} className="gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-              fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-              className="animate-spin" style={{ animationPlayState: loading ? 'running' : 'paused' }}>
-              <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-            </svg>
+            <RefreshCcw 
+              size={16} 
+              className="animate-spin" 
+              style={{ animationPlayState: loading ? 'running' : 'paused' }}
+            />
             Atualizar
           </Button>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <section aria-label="Estatísticas Rápidas" className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <StatsCard title="Total de Livros" value={totalLivros} description="Livros cadastrados"
             icon={<BookOpenText className="h-6 w-6 text-blue-600" />} loading={loading} href="/livros" />
           <StatsCard title="Livros Disponíveis" value={livrosDisponiveis} description="Disponíveis para locação"
@@ -105,9 +107,9 @@ export default function DashboardPage() {
             <StatsCard title="Usuários" value={totalUsuarios} description="Usuários cadastrados"
               icon={<Users className="h-6 w-6 text-purple-600" />} loading={loading} href="/usuarios" />
           )}
-        </div>
+        </section>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <section aria-label="Gráficos do Acervo" className="grid gap-4 md:grid-cols-2">
           <Card className="card-dashboard">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -145,7 +147,7 @@ export default function DashboardPage() {
               )}
             </CardContent>
           </Card>
-        </div>
+        </section>
       </div>
     </DashboardLayout>
   );
